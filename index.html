@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VAPOR | Peer-to-Peer Gaming Marketplace</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Tailwind Theme Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            vapor: {
+              bg: '#171a21',
+              surface: '#1b2838',
+              card: '#2a475e',
+              blue: '#66c0f4',
+              greenDark: '#5c7e10',
+              green: '#a4d007',
+              text: '#c7d5e0',
+              muted: '#8f98a0',
+              hover: '#316282'
+            }
+          },
+          fontFamily: {
+            sans: ['Motiva Sans', 'Segoe UI', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbar matching Steam UI */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #171a21;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2a475e;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #66c0f4;
+    }
+    .glass-panel {
+      background: rgba(27, 40, 56, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(102, 192, 244, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-vapor-bg text-vapor-text min-h-screen flex flex-col font-sans antialiased selection:bg-vapor-blue selection:text-white">
+
+  <!-- GLOBAL HEADER -->
+  <header class="bg-vapor-bg/95 sticky top-0 z-40 border-b border-vapor-card/50 backdrop-blur-md shadow-2xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-8">
+        <a href="#" onclick="switchTab('store')" class="flex items-center gap-3 group">
+          <div class="w-10 h-10 bg-gradient-to-br from-vapor-blue to-blue-700 rounded flex items-center justify-center text-vapor-bg text-2xl font-black transform group-hover:rotate-6 transition-transform">
+            <i class="fa-solid me-0 fa-steam"></i>
+          </div>
+          <span class="text-2xl font-extrabold tracking-wider text-white group-hover:text-vapor-blue transition-colors uppercase">
+            Vapor
+          </span>
+        </a>
+
+        <!-- Global Search Bar -->
+        <div class="relative hidden md:block w-72 lg:w-96">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-vapor-muted text-sm"></i>
+          <input 
+            type="text" 
+            id="globalSearch"
+            placeholder="Search CS2 skins, Valorant Points, Genshin Accounts..." 
+            oninput="handleSearch(this.value)"
+            class="w-full pl-10 pr-4 py-2 bg-vapor-surface/80 border border-vapor-card rounded text-sm text-white placeholder-vapor-muted focus:outline-none focus:border-vapor-blue focus:ring-1 focus:ring-vapor-blue transition-all"
+          >
+        </div>
+      </div>
+
+      <!-- User Navigation & Balance Widget -->
+      <div class="flex items-center gap-4">
+        
+        <!-- Wallet Display -->
+        <div class="hidden sm:flex items-center gap-3 bg-vapor-surface border border-vapor-card px-3.5 py-1.5 rounded">
+          <i class="fa-solid fa-wallet text-vapor-green"></i>
+          <div class="text-xs">
+            <span class="block text-vapor-muted uppercase tracking-wider text-[10px]">Balance</span>
+            <span class="font-bold text-vapor-green" id="walletDisplay">₱2,450.00</span>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <button class="relative p-2 text-vapor-muted hover:text-white transition-colors rounded-lg hover:bg-vapor-card/50">
+          <i class="fa-solid fa-bell text-lg"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-vapor-blue rounded-full animate-ping"></span>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-vapor-blue rounded-full"></span>
+        </button>
+
+        <!-- Profile & Account Status -->
+        <div id="authContainer" class="flex items-center gap-2">
+          <button onclick="openModal('registerModal')" class="bg-vapor-card hover:bg-vapor-hover text-white text-xs font-semibold px-4 py-2 rounded transition-all border border-vapor-blue/30 hover:border-vapor-blue">
+            <i class="fa-solid fa-user-plus mr-1.5"></i> Register / Login
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- NAVIGATION BAR -->
+  <nav class="bg-vapor-surface border-b border-vapor-card/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center space-x-1 overflow-x-auto py-2">
+      <button onclick="switchTab('store')" id="nav-store" class="nav-btn px-4 py-2 text-sm font-semibold text-vapor-blue border-b-2 border-vapor-blue">
+        <i class="fa-solid fa-store mr-2"></i>Store Page
+      </button>
+      <button onclick="switchTab('seller')" id="nav-seller" class="nav-btn px-4 py-2 text-sm font-semibold text-vapor-text hover:text-white hover:bg-vapor-card/30 rounded transition-all">
+        <i class="fa-solid fa-chart-line mr-2"></i>Seller Dashboard
+      </button>
+      <button onclick="switchTab('about')" id="nav-about" class="nav-btn px-4 py-2 text-sm font-semibold text-vapor-text hover:text-white hover:bg-vapor-card/30 rounded transition-all">
+        <i class="fa-solid fa-shield-halved mr-2"></i>About Us
+      </button>
+      <button onclick="switchTab('contact')" id="nav-contact" class="nav-btn px-4 py-2 text-sm font-semibold text-vapor-text hover:text-white hover:bg-vapor-card/30 rounded transition-all">
+        <i class="fa-solid fa-headset mr-2"></i>Contacts & Support
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTAINER WITH VIEW SWITCHING -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- STORE TAB CONTENT -->
+    <div id="tab-store" class="space-y-8">
+      
+      <!-- HERO CTA SECTION (2/3 Banner + 1/3 Quick Action) -->
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Hero Banner (2/3) -->
+        <div class="lg:col-span-2 relative rounded-xl overflow-hidden bg-gradient-to-r from-vapor-card to-vapor-surface p-8 sm:p-10 flex flex-col justify-end border border-vapor-blue/20 shadow-2xl min-h-[280px]">
+          <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#66c0f4_1px,transparent_1px)] [background-size:16px_16px]"></div>
+          <div class="relative z-10 space-y-3">
+            <span class="inline-block px-3 py-1 bg-vapor-blue/10 border border-vapor-blue/40 text-vapor-blue text-xs font-bold tracking-widest rounded uppercase">
+              P2P Escrow Protection
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-extrabold uppercase text-white tracking-tight">
+              BUY. SELL. UPGRADE.
+            </h1>
+            <p class="text-vapor-text text-sm sm:text-base max-w-xl">
+              Trade rare skins, accounts, and in-game gold directly with players worldwide. Guaranteed payouts via GCash & local banking channels.
+            </p>
+            <div class="flex flex-wrap gap-4 pt-2">
+              <a href="#market-grid" class="bg-gradient-to-r from-vapor-greenDark to-vapor-green hover:brightness-110 text-white font-bold text-sm px-6 py-3 rounded shadow-lg transition-all flex items-center gap-2">
+                <i class="fa-solid fa-cart-shopping"></i> Shop Now
+              </a>
+              <button onclick="openModal('sellModal')" class="bg-vapor-card hover:bg-vapor-hover border border-vapor-blue/40 text-white font-bold text-sm px-6 py-3 rounded transition-all flex items-center gap-2">
+                <i class="fa-solid fa-tag"></i> Start Selling
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Payout / Trade Guarantee Card (1/3) -->
+        <div class="glass-panel rounded-xl p-6 flex flex-col justify-between border border-vapor-card">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-white font-bold text-lg uppercase tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-vapor-blue"></i> Instant Payouts
+              </h3>
+              <span class="text-xs bg-vapor-green/10 text-vapor-green font-semibold px-2 py-0.5 rounded border border-vapor-green/30">Live</span>
+            </div>
+            <p class="text-xs text-vapor-muted leading-relaxed">
+              Earnings from completed trades are held securely in escrow and released directly to your verified payout wallet upon item delivery confirmation.
+            </p>
+            <div class="space-y-2 border-t border-vapor-card/60 pt-3">
+              <div class="flex justify-between text-xs">
+                <span class="text-vapor-muted">Accepted Gateway:</span>
+                <span class="text-white font-semibold flex items-center gap-1">
+                  <i class="fa-solid fa-mobile-screen text-vapor-blue"></i> GCash / Maya
+                </span>
+              </div>
+              <div class="flex justify-between text-xs">
+                <span class="text-vapor-muted">Avg. Transfer Time:</span>
+                <span class="text-vapor-green font-semibold">&lt; 3 minutes</span>
+              </div>
+            </div>
+          </div>
+          <button onclick="openModal('registerModal')" class="w-full mt-4 bg-vapor-surface hover:bg-vapor-card text-vapor-blue hover:text-white font-semibold text-xs py-2.5 rounded border border-vapor-blue/30 transition-all text-center">
+            Link GCash Account
+          </button>
+        </div>
+      </section>
+
+      <!-- MAIN BODY & MARKETPLACE (1/3 Left Sidebar + 2/3 Main Stage) -->
+      <section id="market-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
+        
+        <!-- Left Sidebar: Categories & Filters (1/3) -->
+        <aside class="space-y-6">
+          <div class="glass-panel rounded-xl p-5 border border-vapor-card/80 space-y-6 sticky top-28">
+            
+            <div class="flex items-center justify-between border-b border-vapor-card pb-3">
+              <h3 class="font-extrabold text-white uppercase text-sm tracking-wider flex items-center gap-2">
+                <i class="fa-solid fa-filter text-vapor-blue"></i> Market Filters
+              </h3>
+              <button onclick="resetFilters()" class="text-xs text-vapor-muted hover:text-vapor-blue transition-colors">Reset</button>
+            </div>
+
+            <!-- Game Category Selector -->
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-vapor-muted uppercase tracking-wider block">Select Game</label>
+              <div class="space-y-1" id="gameFilters">
+                <button onclick="filterGame('All')" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold bg-vapor-blue/20 text-vapor-blue border border-vapor-blue/40 transition-all flex justify-between items-center">
+                  <span>All Supported Games</span>
+                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-white" id="cnt-all">0</span>
+                </button>
+                <button onclick="filterGame('CS2')" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
+                  <span>Counter-Strike 2</span>
+                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-cs2">0</span>
+                </button>
+                <button onclick="filterGame('Valorant')" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
+                  <span>Valorant</span>
+                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-val">0</span>
+                </button>
+                <button onclick="filterGame('Genshin Impact')" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
+                  <span>Genshin Impact</span>
+                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-gen">0</span>
+                </button>
+                <button onclick="filterGame('Dota 2')" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
+                  <span>Dota 2</span>
+                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-dota">0</span>
+                </button>
+                <button onclick="filterGame('Roblox')" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
+                  <span>Roblox</span>
+                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-roblox">0</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Item Type Selector -->
+            <div class="space-y-2 border-t border-vapor-card/60 pt-4">
+              <label class="text-xs font-bold text-vapor-muted uppercase tracking-wider block">Item Category</label>
+              <div class="space-y-1">
+                <label class="flex items-center gap-2 text-xs text-vapor-text hover:text-white cursor-pointer py-1">
+                  <input type="checkbox" checked value="Skins & Cosmetics" onchange="applyFilters()" class="category-checkbox rounded bg-vapor-surface border-vapor-card text-vapor-blue focus:ring-0">
+                  <span>Skins & Cosmetics</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs text-vapor-text hover:text-white cursor-pointer py-1">
+                  <input type="checkbox" checked value="In-Game Currency" onchange="applyFilters()" class="category-checkbox rounded bg-vapor-surface border-vapor-card text-vapor-blue focus:ring-0">
+                  <span>In-Game Currency / Top-ups</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs text-vapor-text hover:text-white cursor-pointer py-1">
+                  <input type="checkbox" checked value="Tradeable Items" onchange="applyFilters()" class="category-checkbox rounded bg-vapor-surface border-vapor-card text-vapor-blue focus:ring-0">
+                  <span>Tradeable Accounts & Keys</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Max Price Slider -->
+            <div class="space-y-2 border-t border-vapor-card/60 pt-4">
+              <div class="flex justify-between items-center">
+                <label class="text-xs font-bold text-vapor-muted uppercase tracking-wider">Max Price</label>
+                <span class="text-xs font-bold text-vapor-green" id="priceValue">₱25,000</span>
+              </div>
+              <input type="range" id="priceRange" min="100" max="25000" step="100" value="25000" oninput="updatePriceLabel(this.value)" class="w-full accent-vapor-blue bg-vapor-surface h-1.5 rounded cursor-pointer">
+            </div>
+
+          </div>
+        </aside>
+
+        <!-- Main Stage: Product Grid (2/3) -->
+        <main class="lg:col-span-2 space-y-6">
+          
+          <!-- Section Bar -->
+          <div class="flex items-center justify-between bg-vapor-surface p-4 rounded-xl border border-vapor-card">
+            <div>
+              <h2 class="text-xl font-extrabold uppercase text-white tracking-wide">Marketplace Listings</h2>
+              <p class="text-xs text-vapor-muted">Showing live trade listings verified by Vapor Escrow</p>
+            </div>
+            <select id="sortSelect" onchange="applyFilters()" class="bg-vapor-bg border border-vapor-card text-xs text-vapor-text rounded px-3 py-1.5 focus:outline-none focus:border-vapor-blue">
+              <option value="newest">Sort by: Newest First</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="rating">Highest Seller Rating</option>
+            </select>
+          </div>
+
+          <!-- Product Cards Grid -->
+          <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <!-- Rendered dynamically via JavaScript -->
+          </div>
+
+        </main>
+      </section>
+
+      <!-- REVIEWS & COMMUNITY FEEDBACK SECTION -->
+      <section class="bg-vapor-surface border border-vapor-card rounded-xl p-6 sm:p-8 space-y-6">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-vapor-card pb-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white uppercase tracking-wider">Verified Trade Reviews</h2>
+            <p class="text-xs text-vapor-muted">Real feedback submitted by buyers upon item delivery</p>
+          </div>
+          <button onclick="openModal('reviewModal')" class="bg-vapor-card hover:bg-vapor-hover border border-vapor-blue/30 text-vapor-blue hover:text-white font-semibold text-xs px-4 py-2 rounded transition-all flex items-center gap-2">
+            <i class="fa-solid fa-pen"></i> Leave Trade Feedback
+          </button>
+        </div>
+
+        <!-- Reviews Grid -->
+        <div id="reviewsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Dynamically filled by JS -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- SELLER DASHBOARD TAB CONTENT -->
+    <div id="tab-seller" class="hidden space-y-8">
+      <div class="bg-vapor-surface border border-vapor-card rounded-xl p-8 space-y-6">
+        <div class="flex justify-between items-center border-b border-vapor-card pb-4">
+          <div>
+            <h2 class="text-2xl font-extrabold text-white uppercase">Seller Portal</h2>
+            <p class="text-xs text-vapor-muted">Manage active listings, review pending orders, and payout to GCash.</p>
+          </div>
+          <button onclick="openModal('sellModal')" class="bg-gradient-to-r from-vapor-greenDark to-vapor-green text-white font-bold text-xs px-5 py-2.5 rounded transition-all shadow">
+            <i class="fa-solid fa-plus mr-1"></i> New Item Listing
+          </button>
+        </div>
+
+        <!-- Dashboard Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card">
+            <span class="text-xs text-vapor-muted uppercase block">Active Listings</span>
+            <span class="text-2xl font-black text-white" id="statActiveListings">3</span>
+          </div>
+          <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card">
+            <span class="text-xs text-vapor-muted uppercase block">Completed Trades</span>
+            <span class="text-2xl font-black text-vapor-blue">18</span>
+          </div>
+          <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card">
+            <span class="text-xs text-vapor-muted uppercase block">Total Earned</span>
+            <span class="text-2xl font-black text-vapor-green">₱14,850.00</span>
+          </div>
+        </div>
+
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider pt-2">Your Live Market Listings</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="bg-vapor-card/40 text-vapor-muted uppercase">
+                <th class="p-3">Item Title</th>
+                <th class="p-3">Game</th>
+                <th class="p-3">Price</th>
+                <th class="p-3">Status</th>
+                <th class="p-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sellerListingsTable" class="divide-y divide-vapor-card/40">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABOUT TAB CONTENT -->
+    <div id="tab-about" class="hidden space-y-6">
+      <div class="bg-vapor-surface border border-vapor-card rounded-xl p-8 space-y-4 max-w-3xl mx-auto">
+        <h2 class="text-2xl font-black text-white uppercase tracking-wide">About Vapor Marketplace</h2>
+        <p class="text-xs text-vapor-text leading-relaxed">
+          Vapor is a high-speed, peer-to-peer digital goods platform engineered specifically for gamers across Southeast Asia. By integrating localized fintech solutions like GCash alongside secure escrow state management, Vapor removes traditional marketplace friction and high platform commissions.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+          <div class="bg-vapor-bg p-4 rounded border border-vapor-card">
+            <i class="fa-solid fa-shield-cat text-vapor-blue text-2xl mb-2"></i>
+            <h4 class="font-bold text-white text-sm">Escrow Protection</h4>
+            <p class="text-[11px] text-vapor-muted">Funds are held until the buyer verifies delivery of the digital asset.</p>
+          </div>
+          <div class="bg-vapor-bg p-4 rounded border border-vapor-card">
+            <i class="fa-solid fa-bolt text-vapor-green text-2xl mb-2"></i>
+            <h4 class="font-bold text-white text-sm">Low 2.5% Seller Fee</h4>
+            <p class="text-[11px] text-vapor-muted">Keep more of your earnings compared to legacy item exchanges.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACT TAB CONTENT -->
+    <div id="tab-contact" class="hidden space-y-6">
+      <div class="bg-vapor-surface border border-vapor-card rounded-xl p-8 max-w-2xl mx-auto space-y-6">
+        <h2 class="text-2xl font-black text-white uppercase tracking-wide">Customer Support & Inquiries</h2>
+        <p class="text-xs text-vapor-text">Need assistance with a trade dispute or payout? Use our automated AI assistant on the bottom right or send a direct ticket below.</p>
+        
+        <form onsubmit="handleContactSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-vapor-muted uppercase mb-1">Your Email</label>
+            <input type="email" required placeholder="user@domain.com" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-vapor-muted uppercase mb-1">Issue Category</label>
+            <select class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
+              <option>Trade Escrow Hold</option>
+              <option>GCash Cashout Issue</option>
+              <option>Report Fraudulent Seller</option>
+              <option>General Support</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-vapor-muted uppercase mb-1">Message Detail</label>
+            <textarea rows="4" required placeholder="Provide order ID and item details..." class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-xs text-white focus:border-vapor-blue focus:outline-none"></textarea>
+          </div>
+          <button type="submit" class="w-full bg-vapor-blue text-vapor-bg font-extrabold text-xs py-3 rounded hover:brightness-110 transition-all uppercase">
+            Submit Support Ticket
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-vapor-surface border-t border-vapor-card/80 mt-16 text-xs text-vapor-muted">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
+      
+      <div class="space-y-3">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-vapor-blue rounded flex items-center justify-center text-vapor-bg font-black text-xs">V</div>
+          <span class="text-white font-extrabold text-base tracking-wider uppercase">Vapor</span>
+        </div>
+        <p class="text-[11px] leading-relaxed">The premier decentralized P2P gaming market for Southeast Asian gamers.</p>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase mb-3 text-xs tracking-wider">Navigation</h4>
+        <ul class="space-y-2 text-[11px]">
+          <li><a href="#" onclick="switchTab('store')" class="hover:text-vapor-blue transition-colors">Store Page</a></li>
+          <li><a href="#" onclick="switchTab('seller')" class="hover:text-vapor-blue transition-colors">Seller Portal</a></li>
+          <li><a href="#" onclick="switchTab('about')" class="hover:text-vapor-blue transition-colors">Safety & Escrow</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase mb-3 text-xs tracking-wider">Legal & Status</h4>
+        <ul class="space-y-2 text-[11px]">
+          <li><a href="#" class="hover:text-vapor-blue transition-colors">Terms of Service</a></li>
+          <li><a href="#" class="hover:text-vapor-blue transition-colors">Privacy Policy</a></li>
+          <li><span class="text-vapor-green font-semibold">● API Operational</span></li>
+        </ul>
+      </div>
+
+      <div class="space-y-3">
+        <h4 class="text-white font-bold uppercase text-xs tracking-wider">Accepted Gateways</h4>
+        <div class="flex items-center gap-3 text-lg text-white">
+          <i class="fa-solid fa-mobile-screen title="GCash / Mobile Money"></i>
+          <i class="fa-solid fa-credit-card" title="Visa / Mastercard"></i>
+          <i class="fa-solid fa-building-columns" title="Bank Transfer"></i>
+        </div>
+        <p class="text-[10px] text-vapor-muted">GCash, Maya, and PayMongo automated settlement.</p>
+      </div>
+
+    </div>
+    <div class="border-t border-vapor-card/40 py-4 text-center text-[11px]">
+      &copy; <span id="yearSpan"></span> Vapor Digital Gaming Marketplace. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- MODAL 1: SELLER ITEM UPLOAD -->
+  <div id="sellModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-lg w-full rounded-xl p-6 border border-vapor-blue/30 space-y-4">
+      <div class="flex justify-between items-center border-b border-vapor-card pb-3">
+        <h3 class="font-extrabold text-white uppercase text-base tracking-wide">
+          <i class="fa-solid fa-tag text-vapor-blue mr-2"></i>List New Item For Sale
+        </h3>
+        <button onclick="closeModal('sellModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form onsubmit="handleCreateListing(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-vapor-muted uppercase mb-1">Item Title</label>
+          <input type="text" id="newTitle" required placeholder="e.g. CS2 AK-47 | Asiimov (Field-Tested)" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-vapor-muted uppercase mb-1">Game</label>
+            <select id="newGame" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+              <option value="CS2">CS2</option>
+              <option value="Valorant">Valorant</option>
+              <option value="Genshin Impact">Genshin Impact</option>
+              <option value="Dota 2">Dota 2</option>
+              <option value="Roblox">Roblox</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-vapor-muted uppercase mb-1">Category</label>
+            <select id="newCategory" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+              <option value="Skins & Cosmetics">Skins & Cosmetics</option>
+              <option value="In-Game Currency">In-Game Currency</option>
+              <option value="Tradeable Items">Tradeable Items</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-vapor-muted uppercase mb-1">Price (PHP ₱)</label>
+            <input type="number" id="newPrice" required min="10" placeholder="1500" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-vapor-muted uppercase mb-1">Image URL</label>
+            <input type="url" id="newImage" required placeholder="https://..." class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full bg-gradient-to-r from-vapor-greenDark to-vapor-green text-white font-extrabold py-3 rounded uppercase tracking-wider hover:brightness-110 transition-all">
+            Publish Listing
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: USER REGISTRATION / GCASH INTEGRATION -->
+  <div id="registerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-md w-full rounded-xl p-6 border border-vapor-blue/30 space-y-4">
+      <div class="flex justify-between items-center border-b border-vapor-card pb-3">
+        <h3 class="font-extrabold text-white uppercase text-base tracking-wide">
+          <i class="fa-solid fa-user-shield text-vapor-blue mr-2"></i>Account Registration
+        </h3>
+        <button onclick="closeModal('registerModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form onsubmit="handleRegistration(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-vapor-muted uppercase mb-1">Gamertag / Username</label>
+          <input type="text" id="regUsername" required placeholder="VaporGamer99" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-vapor-muted uppercase mb-1">Email Address</label>
+          <input type="email" id="regEmail" required placeholder="gamer@domain.com" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-vapor-muted uppercase mb-1 flex items-center justify-between">
+            <span>GCash Mobile Number</span>
+            <span class="text-[10px] text-vapor-green font-semibold">For Escrow Payouts</span>
+          </label>
+          <input type="tel" id="regGcash" required pattern="09[0-9]{9}" placeholder="09171234567" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+          <span class="text-[10px] text-vapor-muted block mt-1">Must be an active 11-digit PH mobile number.</span>
+        </div>
+
+        <button type="submit" class="w-full bg-vapor-blue text-vapor-bg font-extrabold py-3 rounded uppercase tracking-wider hover:brightness-110 transition-all">
+          Create Account & Link Wallet
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: LEAVE REVIEW -->
+  <div id="reviewModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-panel max-w-md w-full rounded-xl p-6 border border-vapor-blue/30 space-y-4">
+      <div class="flex justify-between items-center border-b border-vapor-card pb-3">
+        <h3 class="font-extrabold text-white uppercase text-base tracking-wide">Submit Trade Review</h3>
+        <button onclick="closeModal('reviewModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form onsubmit="handleReviewSubmit(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-vapor-muted uppercase mb-1">Select Rating</label>
+          <div class="flex items-center gap-2 text-2xl text-amber-400 cursor-pointer" id="starContainer">
+            <i class="fa-solid fa-star text-amber-400" onclick="setRating(1)"></i>
+            <i class="fa-solid fa-star text-amber-400" onclick="setRating(2)"></i>
+            <i class="fa-solid fa-star text-amber-400" onclick="setRating(3)"></i>
+            <i class="fa-solid fa-star text-amber-400" onclick="setRating(4)"></i>
+            <i class="fa-solid fa-star text-amber-400" onclick="setRating(5)"></i>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-vapor-muted uppercase mb-1">Comment</label>
+          <textarea id="reviewComment" rows="3" required placeholder="Fast delivery, skin delivered in Steam trade immediately!" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-vapor-blue text-vapor-bg font-bold py-2.5 rounded uppercase hover:brightness-110 transition-all">
+          Post Review
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- EMBEDDED VOICEFLOW AI CHATBOT WIDGET -->
+  <script type="text/javascript">
+    (function(d, t) {
+        var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
+        v.onload = function() {
+          window.voiceflow.chat.load({
+            verify: { projectID: '650000000000000000000000' },
+            url: 'https://general-runtime.voiceflow.com',
+            versionID: 'production'
+          });
+        }
+        v.src = "https://cdn.voiceflow.com/widget/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
+    })(document, 'script');
+  </script>
+
+  <!-- VANILLA JS CORE APP SCRIPT -->
+  <script>
+    // 1. SUPABASE CLIENT INITIALIZATION (Replace keys with deployment envs)
+    const SUPABASE_URL = 'https://your-supabase-project.supabase.co';
+    const SUPABASE_ANON_KEY = 'your-anon-key';
+    const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    // 2. APP STATE
+    let activeGameFilter = 'All';
+    let currentRatingSelection = 5;
+    let currentUser = null;
+
+    // Seed Data
+    let products = [
+      {
+        id: '1',
+        title: 'AK-47 | Redline (Minimal Wear)',
+        game_title: 'CS2',
+        category: 'Skins & Cosmetics',
+        price: 1850,
+        image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80',
+        rating: 4.9,
+        seller: 'AxiomTrader'
+      },
+      {
+        id: '2',
+        title: '4,350 Valorant Points (VP Instant Top-up)',
+        game_title: 'Valorant',
+        category: 'In-Game Currency',
+        price: 1650,
+        image_url: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=600&q=80',
+        rating: 5.0,
+        seller: 'VP_Vault_PH'
+      },
+      {
+        id: '3',
+        title: 'AR 58 Genshin Account - C2 Raiden + Signature',
+        game_title: 'Genshin Impact',
+        category: 'Tradeable Items',
+        price: 8500,
+        image_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80',
+        rating: 4.8,
+        seller: 'TeyvatWhale'
+      },
+      {
+        id: '4',
+        title: 'Dragonclaw Hook (Clean)',
+        game_title: 'Dota 2',
+        category: 'Skins & Cosmetics',
+        price: 12400,
+        image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80',
+        rating: 5.0,
+        seller: 'SteamDotaMarket'
+      },
+      {
+        id: '5',
+        title: '10,000 Robux Digital Code',
+        game_title: 'Roblox',
+        category: 'In-Game Currency',
+        price: 3200,
+        image_url: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?auto=format&fit=crop&w=600&q=80',
+        rating: 4.7,
+        seller: 'BloxStore'
+      }
+    ];
+
+    let reviews = [
+      {
+        reviewer: 'ShadowNinja9',
+        rating: 5,
+        comment: 'Received the CS2 skin in trade within 2 minutes of paying via GCash. Super legit escrow!',
+        date: '2 hours ago'
+      },
+      {
+        reviewer: 'CypherMain',
+        rating: 5,
+        comment: 'VP topup went smoothly. Saved 15% compared to official store.',
+        date: '1 day ago'
+      }
+    ];
+
+    // 3. LIFECYCLE INITIALIZATION
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('yearSpan').textContent = new Date().getFullYear();
+      renderProducts();
+      renderReviews();
+      updateCategoryCounts();
+      renderSellerTable();
+    });
+
+    // 4. TAB SWITCHING
+    function switchTab(tabId) {
+      ['store', 'seller', 'about', 'contact'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`nav-${t}`);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.classList.remove('text-vapor-blue', 'border-b-2', 'border-vapor-blue');
+          btn.classList.add('text-vapor-text');
+        }
+      });
+
+      const activeEl = document.getElementById(`tab-${tabId}`);
+      const activeBtn = document.getElementById(`nav-${tabId}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('text-vapor-blue', 'border-b-2', 'border-vapor-blue');
+        activeBtn.classList.remove('text-vapor-text');
+      }
+    }
+
+    // 5. PRODUCT RENDERING & FILTERING
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      const searchVal = document.getElementById('globalSearch').value.toLowerCase();
+      const maxPrice = parseFloat(document.getElementById('priceRange').value);
+      
+      const checkedCategories = Array.from(document.querySelectorAll('.category-checkbox:checked')).map(cb => cb.value);
+
+      let filtered = products.filter(p => {
+        const matchesGame = activeGameFilter === 'All' || p.game_title === activeGameFilter;
+        const matchesCategory = checkedCategories.includes(p.category);
+        const matchesPrice = p.price <= maxPrice;
+        const matchesSearch = p.title.toLowerCase().includes(searchVal) || p.game_title.toLowerCase().includes(searchVal);
+        return matchesGame && matchesCategory && matchesPrice && matchesSearch;
+      });
+
+      // Sorting
+      const sortVal = document.getElementById('sortSelect').value;
+      if (sortVal === 'price-low') filtered.sort((a, b) => a.price - b.price);
+      if (sortVal === 'price-high') filtered.sort((a, b) => b.price - a.price);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-vapor-muted bg-vapor-surface rounded-xl border border-vapor-card">
+            <i class="fa-solid fa-ghost text-4xl mb-3 text-vapor-card"></i>
+            <p class="text-sm font-semibold">No items match your active filters.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => `
+        <div class="bg-vapor-surface hover:bg-vapor-card/80 border border-vapor-card hover:border-vapor-blue/50 rounded-xl overflow-hidden transition-all flex flex-col justify-between group shadow-lg">
+          <div>
+            <div class="relative h-44 overflow-hidden bg-vapor-bg">
+              <img src="${p.image_url}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              <span class="absolute top-2 left-2 bg-vapor-bg/90 backdrop-blur-md text-vapor-blue text-[10px] font-bold px-2 py-0.5 rounded border border-vapor-blue/30 uppercase">
+                ${p.game_title}
+              </span>
+            </div>
+            
+            <div class="p-4 space-y-2">
+              <span class="text-[10px] text-vapor-muted uppercase block">${p.category}</span>
+              <h4 class="font-bold text-white text-sm line-clamp-1 group-hover:text-vapor-blue transition-colors" title="${p.title}">
+                ${p.title}
+              </h4>
+              
+              <div class="flex items-center gap-2 text-xs text-vapor-muted">
+                <i class="fa-solid fa-circle-user text-vapor-blue"></i>
+                <span>${p.seller}</span>
+                <span class="text-amber-400 font-bold ml-auto flex items-center gap-1">
+                  <i class="fa-solid fa-star text-[10px]"></i> ${p.rating}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 pt-0 border-t border-vapor-card/40 flex items-center justify-between mt-3">
+            <div>
+              <span class="text-[10px] text-vapor-muted block">Price</span>
+              <span class="text-base font-extrabold text-vapor-green">₱${p.price.toLocaleString()}</span>
+            </div>
+            <button onclick="initiateCheckout('${p.id}')" class="bg-gradient-to-r from-vapor-greenDark to-vapor-green hover:brightness-110 text-white font-extrabold text-xs px-4 py-2 rounded transition-all shadow flex items-center gap-1.5">
+              Instant Buy
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateCategoryCounts() {
+      document.getElementById('cnt-all').textContent = products.length;
+      document.getElementById('cnt-cs2').textContent = products.filter(p => p.game_title === 'CS2').length;
+      document.getElementById('cnt-val').textContent = products.filter(p => p.game_title === 'Valorant').length;
+      document.getElementById('cnt-gen').textContent = products.filter(p => p.game_title === 'Genshin Impact').length;
+      document.getElementById('cnt-dota').textContent = products.filter(p => p.game_title === 'Dota 2').length;
+      document.getElementById('cnt-roblox').textContent = products.filter(p => p.game_title === 'Roblox').length;
+    }
+
+    function filterGame(game) {
+      activeGameFilter = game;
+      document.querySelectorAll('.filter-game-btn').forEach(btn => {
+        btn.classList.remove('bg-vapor-blue/20', 'text-vapor-blue', 'border', 'border-vapor-blue/40');
+        btn.classList.add('text-vapor-text');
+      });
+      event.currentTarget.classList.add('bg-vapor-blue/20', 'text-vapor-blue', 'border', 'border-vapor-blue/40');
+      event.currentTarget.classList.remove('text-vapor-text');
+      renderProducts();
+    }
+
+    function updatePriceLabel(val) {
+      document.getElementById('priceValue').textContent = `₱${parseInt(val).toLocaleString()}`;
+      renderProducts();
+    }
+
+    function applyFilters() {
+      renderProducts();
+    }
+
+    function handleSearch(val) {
+      renderProducts();
+    }
+
+    function resetFilters() {
+      activeGameFilter = 'All';
+      document.getElementById('priceRange').value = 25000;
+      document.getElementById('priceValue').textContent = '₱25,000';
+      document.getElementById('globalSearch').value = '';
+      renderProducts();
+    }
+
+    // 6. CHECKOUT & PAYMONGO HANDLER
+    function initiateCheckout(productId) {
+      const item = products.find(p => p.id === productId);
+      if (!item) return;
+
+      const confirmMsg = `Proceed to checkout via PayMongo (GCash / Maya) for "${item.title}" priced at ₱${item.price.toLocaleString()}?`;
+      if (confirm(confirmMsg)) {
+        alert(`Redirecting to PayMongo Escrow Checkout Gateway...\n\nItem: ${item.title}\nAmount: ₱${item.price}`);
+        // Integration point for PayMongo Checkout API endpoint call
+      }
+    }
+
+    // 7. SELLER DASHBOARD RENDERING
+    function renderSellerTable() {
+      const table = document.getElementById('sellerListingsTable');
+      table.innerHTML = products.slice(0, 3).map(p => `
+        <tr class="hover:bg-vapor-card/20 transition-colors">
+          <td class="p-3 font-semibold text-white">${p.title}</td>
+          <td class="p-3 text-vapor-muted">${p.game_title}</td>
+          <td class="p-3 font-bold text-vapor-green">₱${p.price.toLocaleString()}</td>
+          <td class="p-3"><span class="bg-vapor-green/10 text-vapor-green border border-vapor-green/30 px-2 py-0.5 rounded text-[10px]">Active</span></td>
+          <td class="p-3 text-right">
+            <button onclick="deleteListing('${p.id}')" class="text-red-400 hover:text-red-300 font-bold"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function handleCreateListing(e) {
+      e.preventDefault();
+      const newProduct = {
+        id: Date.now().toString(),
+        title: document.getElementById('newTitle').value,
+        game_title: document.getElementById('newGame').value,
+        category: document.getElementById('newCategory').value,
+        price: parseFloat(document.getElementById('newPrice').value),
+        image_url: document.getElementById('newImage').value,
+        rating: 5.0,
+        seller: currentUser ? currentUser.username : 'You (Seller)'
+      };
+
+      products.unshift(newProduct);
+      renderProducts();
+      updateCategoryCounts();
+      renderSellerTable();
+      closeModal('sellModal');
+      alert('Listing created successfully!');
+    }
+
+    function deleteListing(id) {
+      products = products.filter(p => p.id !== id);
+      renderProducts();
+      updateCategoryCounts();
+      renderSellerTable();
+    }
+
+    // 8. REVIEWS SYSTEM
+    function renderReviews() {
+      const container = document.getElementById('reviewsList');
+      container.innerHTML = reviews.map(r => `
+        <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card/80 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-white text-xs">${r.reviewer}</span>
+            <div class="text-amber-400 text-xs">
+              ${'<i class="fa-solid fa-star"></i>'.repeat(r.rating)}
+            </div>
+          </div>
+          <p class="text-xs text-vapor-text leading-relaxed font-sans">${r.comment}</p>
+          <span class="text-[10px] text-vapor-muted block">${r.date}</span>
+        </div>
+      `).join('');
+    }
+
+    function setRating(r) {
+      currentRatingSelection = r;
+      const stars = document.getElementById('starContainer').children;
+      for (let i = 0; i < 5; i++) {
+        stars[i].className = i < r ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star text-vapor-muted';
+      }
+    }
+
+    function handleReviewSubmit(e) {
+      e.preventDefault();
+      const comment = document.getElementById('reviewComment').value;
+      reviews.unshift({
+        reviewer: currentUser ? currentUser.username : 'Anonymous Gamer',
+        rating: currentRatingSelection,
+        comment: comment,
+        date: 'Just now'
+      });
+      renderReviews();
+      closeModal('reviewModal');
+    }
+
+    // 9. REGISTRATION
+    function handleRegistration(e) {
+      e.preventDefault();
+      const username = document.getElementById('regUsername').value;
+      const email = document.getElementById('regEmail').value;
+      const gcash = document.getElementById('regGcash').value;
+
+      currentUser = { username, email, gcash };
+      
+      document.getElementById('authContainer').innerHTML = `
+        <div class="flex items-center gap-2 bg-vapor-surface px-3 py-1.5 rounded border border-vapor-blue/30">
+          <div class="w-6 h-6 rounded-full bg-vapor-blue text-vapor-bg font-bold text-xs flex items-center justify-center">
+            ${username.charAt(0).toUpperCase()}
+          </div>
+          <span class="text-xs font-bold text-white">${username}</span>
+        </div>
+      `;
+
+      closeModal('registerModal');
+      alert(`Account created! Payouts linked to GCash: ${gcash}`);
+    }
+
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      alert('Support ticket submitted successfully. Our team will contact you via email.');
+    }
+
+    // 10. MODAL UTILITIES
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
