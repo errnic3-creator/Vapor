@@ -462,7 +462,7 @@
       <div class="space-y-3">
         <h4 class="text-white font-bold uppercase text-xs tracking-wider">Accepted Gateways</h4>
         <div class="flex items-center gap-3 text-lg text-white">
-          <i class="fa-solid fa-mobile-screen title="GCash / Mobile Money"></i>
+          <i class="fa-solid fa-mobile-screen" title="GCash / Mobile Money"></i>
           <i class="fa-solid fa-credit-card" title="Visa / Mastercard"></i>
           <i class="fa-solid fa-building-columns" title="Bank Transfer"></i>
         </div>
@@ -607,7 +607,7 @@
         var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
         v.onload = function() {
           window.voiceflow.chat.load({
-            verify: { projectID: '650000000000000000000000' },
+            verify: { projectID: '6a8db3e6e7a4a847e7352d7e' },
             url: 'https://general-runtime.voiceflow.com',
             versionID: 'production'
           });
@@ -618,9 +618,9 @@
 
   <!-- VANILLA JS CORE APP SCRIPT -->
   <script>
-    // 1. SUPABASE CLIENT INITIALIZATION (Replace keys with deployment envs)
-    const SUPABASE_URL = 'https://your-supabase-project.supabase.co';
-    const SUPABASE_ANON_KEY = 'your-anon-key';
+    // 1. SUPABASE CLIENT INITIALIZATION
+    const SUPABASE_URL = 'https://itjzmiahlftsbwxjmeok.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0anptaWFobGZ0c2J3eGptZW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2Njc3NDEsImV4cCI6MjEwMzI0Mzc0MX0.g8vc2Xro7fQ7RtAjZ4k9gfpvsVNew5XvVLcwGS4phzA';
     const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     // 2. APP STATE
