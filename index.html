@@ -592,7 +592,7 @@
       }
       container.innerHTML = reviews.map(r => `
         <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card/80 space-y-2">
-          <div class="flex justify-between items-center"><span class="font-bold text-white text-xs">${r.reviewer}</span></div>
+          <div class="flex justify-between items-center"><span class="font-bold text-white text-xs">${r.reviewer || 'Anonymous'}</span></div>
           <p class="text-xs text-vapor-text">${r.comment}</p>
         </div>
       `).join('');
@@ -674,28 +674,45 @@
       openModal('checkoutModal');
     }
 
-    function handleMockPayment(e) {
+    // PROCESS PAYMENT & REMOVE PRODUCT FROM SUPABASE
+    async function handleMockPayment(e) {
       e.preventDefault();
+      if (!selectedCheckoutProduct) return;
+
       const btn = document.getElementById('payBtn');
       btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Authorizing Trade...`;
 
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-lock"></i> Authorize & Pay`;
+      // 1. Delete item from database so it vanishes from marketplace
+      const { error } = await supabaseClient
+        .from('products')
+        .delete()
+        .eq('id', selectedCheckoutProduct.id);
 
-        if(userBalance >= selectedCheckoutProduct.price) {
-          userBalance -= selectedCheckoutProduct.price;
-          document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-        }
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-lock"></i> Authorize & Pay`;
 
-        document.getElementById('receiptTxnId').textContent = `#VP-${Math.floor(100000 + Math.random() * 900000)}`;
-        document.getElementById('receiptItemTitle').textContent = selectedCheckoutProduct.title;
-        document.getElementById('receiptAmount').textContent = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString()}`;
+      if (error) {
+        alert('Payment processing failed: ' + error.message);
+        return;
+      }
 
-        closeModal('checkoutModal');
-        openModal('successModal');
-      }, 1500);
+      // 2. Deduct mock wallet balance
+      if (userBalance >= selectedCheckoutProduct.price) {
+        userBalance -= selectedCheckoutProduct.price;
+        document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      }
+
+      // 3. Set receipt information
+      document.getElementById('receiptTxnId').textContent = `#VP-${Math.floor(100000 + Math.random() * 900000)}`;
+      document.getElementById('receiptItemTitle').textContent = selectedCheckoutProduct.title;
+      document.getElementById('receiptAmount').textContent = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString()}`;
+
+      // 4. Reload product listings
+      await fetchProducts();
+
+      closeModal('checkoutModal');
+      openModal('successModal');
     }
 
     function renderSellerTable() {
