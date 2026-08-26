@@ -416,7 +416,6 @@
       await fetchReviews();
     });
 
-    // RESTORE USER LOGIN SESSION FROM LOCAL STORAGE
     function restoreUserSession() {
       const savedUser = localStorage.getItem('vapor_user');
       if (savedUser) {
@@ -449,7 +448,6 @@
       `;
     }
 
-    // FETCH PRODUCTS FROM SUPABASE
     async function fetchProducts() {
       const { data, error } = await supabaseClient
         .from('products')
@@ -462,7 +460,6 @@
       renderSellerTable();
     }
 
-    // FETCH REVIEWS FROM SUPABASE
     async function fetchReviews() {
       const { data, error } = await supabaseClient
         .from('reviews')
@@ -473,7 +470,7 @@
       renderReviews();
     }
 
-    // SAVE REVIEW TO SUPABASE (explicitly handling nulls for optional relational fields)
+    // SAVE REVIEW TO SUPABASE WITH RATING DEFAULT
     async function handleReviewSubmit(e) {
       e.preventDefault();
       const comment = document.getElementById('reviewComment').value;
@@ -483,9 +480,8 @@
         .from('reviews')
         .insert([{ 
           reviewer: reviewer, 
-          reviewer_id: null, 
-          comment: comment, 
-          product_id: null 
+          comment: comment,
+          rating: 5
         }]);
 
       if (error) {
@@ -498,7 +494,6 @@
       e.target.reset();
     }
 
-    // SAVE PRODUCT TO SUPABASE
     async function handleCreateListing(e) {
       e.preventDefault();
       const btn = document.getElementById('submitListingBtn');
@@ -568,38 +563,72 @@
           <div>
             <div class="relative h-44 overflow-hidden bg-vapor-bg">
               <img src="${p.image_url}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'">
-              <span class="absolute top-2 left-2 bg-vapor-bg/90 backdrop-blur-md text-vapor-blue text-[10px] font-bold px-2 py-0.5 rounded border border-vapor-blue/30 uppercase">${p.game_title}</span>
+              <span class="absolute top-2 left-2 bg-vapor-bg/90 backdrop-blur-md text-white border border-vapor-card text-[10px] font-bold px-2 py-0.5 rounded">
+                ${p.game_title}
+              </span>
             </div>
-            <div class="p-4 space-y-2">
-              <span class="text-[10px] text-vapor-muted uppercase block">${p.category}</span>
-              <h4 class="font-bold text-white text-sm line-clamp-1 group-hover:text-vapor-blue transition-colors">${p.title}</h4>
-              <div class="flex items-center gap-2 text-xs text-vapor-muted">
-                <i class="fa-solid fa-circle-user text-vapor-blue"></i><span>${p.seller || 'Anonymous'}</span>
+            <div class="p-4 space-y-1.5">
+              <span class="text-[10px] font-bold text-vapor-muted uppercase tracking-wider block">${p.category}</span>
+              <h4 class="text-sm font-bold text-white line-clamp-1 group-hover:text-vapor-blue transition-colors">${p.title}</h4>
+              <div class="flex items-center gap-1.5 text-xs text-vapor-muted">
+                <i class="fa-solid fa-shield-halved text-vapor-blue text-[10px]"></i>
+                <span class="truncate">Seller: ${p.seller || 'Verified Trader'}</span>
               </div>
             </div>
           </div>
-          <div class="p-4 pt-0 border-t border-vapor-card/40 flex items-center justify-between mt-3">
+          <div class="p-4 pt-0 flex items-center justify-between border-t border-vapor-card/40 mt-2">
             <div>
-              <span class="text-[10px] text-vapor-muted block">Price</span>
-              <span class="text-base font-extrabold text-vapor-green">₱${parseFloat(p.price).toLocaleString()}</span>
+              <span class="text-[10px] text-vapor-muted font-bold block">PRICE</span>
+              <span class="text-base font-extrabold text-vapor-green">₱${parseFloat(p.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
             </div>
-            <button onclick="initiateCheckout('${p.id}')" class="bg-gradient-to-r from-vapor-greenDark to-vapor-green hover:brightness-110 text-white font-extrabold text-xs px-4 py-2 rounded transition-all shadow">Buy Now</button>
+            <button onclick="openCheckoutModal(${p.id})" class="bg-vapor-green/10 hover:bg-vapor-green hover:text-white text-vapor-green border border-vapor-green/30 font-bold text-xs px-3.5 py-2 rounded-lg transition-all">
+              Buy Now
+            </button>
           </div>
         </div>
       `).join('');
     }
 
     function renderReviews() {
-      const container = document.getElementById('reviewsList');
+      const list = document.getElementById('reviewsList');
       if (reviews.length === 0) {
-        container.innerHTML = `<p class="text-xs text-vapor-muted col-span-full">No feedback submitted yet.</p>`;
+        list.innerHTML = `<p class="text-xs text-vapor-muted col-span-2">No user reviews yet.</p>`;
         return;
       }
-      container.innerHTML = reviews.map(r => `
-        <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card/80 space-y-2">
-          <div class="flex justify-between items-center"><span class="font-bold text-white text-xs">${r.reviewer || 'Anonymous'}</span></div>
+      list.innerHTML = reviews.map(r => `
+        <div class="bg-vapor-bg p-4 rounded-xl border border-vapor-card space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-bold text-white">${r.reviewer || 'Anonymous User'}</span>
+            <div class="text-yellow-400 text-xs">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
+          </div>
           <p class="text-xs text-vapor-text">${r.comment}</p>
         </div>
+      `).join('');
+    }
+
+    function renderSellerTable() {
+      const table = document.getElementById('sellerListingsTable');
+      document.getElementById('statActiveListings').textContent = products.length;
+      if (products.length === 0) {
+        table.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-vapor-muted">No items currently listed.</td></tr>`;
+        return;
+      }
+      table.innerHTML = products.map(p => `
+        <tr class="hover:bg-vapor-bg/50">
+          <td class="p-3 font-bold text-white">${p.title}</td>
+          <td class="p-3">${p.game_title}</td>
+          <td class="p-3 text-vapor-green font-bold">₱${parseFloat(p.price).toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+          <td class="p-3"><span class="bg-vapor-green/10 text-vapor-green border border-vapor-green/30 px-2 py-0.5 rounded text-[10px] font-bold">Active</span></td>
+          <td class="p-3 text-right">
+            <button onclick="deleteListing(${p.id})" class="text-red-400 hover:text-red-300 font-bold text-xs"><i class="fa-solid fa-trash mr-1"></i> Remove</button>
+          </td>
+        </tr>
       `).join('');
     }
 
@@ -612,136 +641,88 @@
       document.getElementById('cnt-roblox').textContent = products.filter(p => p.game_title === 'Roblox').length;
     }
 
-    function filterGame(game, e) {
+    function filterGame(game, event) {
       activeGameFilter = game;
-      document.querySelectorAll('.filter-game-btn').forEach(btn => {
-        btn.classList.remove('bg-vapor-blue/20', 'text-vapor-blue', 'border', 'border-vapor-blue/40');
-        btn.classList.add('text-vapor-text');
+      document.querySelectorAll('.filter-game-btn').forEach(b => {
+        b.className = 'filter-game-btn bg-vapor-surface text-vapor-text hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap';
       });
-      if(e && e.currentTarget) {
-        e.currentTarget.classList.add('bg-vapor-blue/20', 'text-vapor-blue', 'border', 'border-vapor-blue/40');
-      }
+      event.currentTarget.className = 'filter-game-btn bg-vapor-blue/20 text-vapor-blue border border-vapor-blue/40 px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap';
       renderProducts();
     }
 
-    function updatePriceLabel(val) {
-      document.getElementById('priceValue').textContent = `₱${parseInt(val).toLocaleString()}`;
-      renderProducts();
-    }
-
-    function applyFilters() { renderProducts(); }
-    function handleSearch(val) { renderProducts(); }
-    function resetFilters() {
-      activeGameFilter = 'All';
-      document.getElementById('priceRange').value = 25000;
-      document.getElementById('priceValue').textContent = '₱25,000';
-      document.getElementById('globalSearch').value = '';
-      renderProducts();
-    }
-
-    function switchTab(tabId) {
-      ['store', 'seller', 'about', 'contact'].forEach(t => {
-        const el = document.getElementById(`tab-${t}`);
-        const btn = document.getElementById(`nav-${t}`);
-        if (el) el.classList.add('hidden');
-        if (btn) {
-          btn.classList.remove('text-vapor-blue', 'border-b-2', 'border-vapor-blue');
-          btn.classList.add('text-vapor-text');
-        }
-      });
-
-      const activeEl = document.getElementById(`tab-${tabId}`);
-      const activeBtn = document.getElementById(`nav-${tabId}`);
-      if (activeEl) activeEl.classList.remove('hidden');
-      if (activeBtn) {
-        activeBtn.classList.add('text-vapor-blue', 'border-b-2', 'border-vapor-blue');
-        activeBtn.classList.remove('text-vapor-text');
-      }
-    }
-
-    function initiateCheckout(productId) {
-      selectedCheckoutProduct = products.find(p => p.id === productId);
+    function openCheckoutModal(id) {
+      selectedCheckoutProduct = products.find(p => p.id === id);
       if (!selectedCheckoutProduct) return;
 
-      const previewContainer = document.getElementById('checkoutItemPreview');
-      previewContainer.innerHTML = `
-        <img src="${selectedCheckoutProduct.image_url}" class="w-16 h-16 object-cover rounded border border-vapor-card" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'">
-        <div class="flex-grow min-w-0">
-          <span class="text-[10px] text-vapor-blue uppercase font-bold">${selectedCheckoutProduct.game_title}</span>
+      document.getElementById('checkoutItemPreview').innerHTML = `
+        <img src="${selectedCheckoutProduct.image_url}" class="w-12 h-12 object-cover rounded bg-vapor-card" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'">
+        <div class="truncate">
           <h4 class="text-xs font-bold text-white truncate">${selectedCheckoutProduct.title}</h4>
-          <p class="text-xs text-vapor-muted">Seller: ${selectedCheckoutProduct.seller || 'Anonymous'}</p>
+          <span class="text-[10px] text-vapor-muted font-bold block">${selectedCheckoutProduct.game_title}</span>
         </div>
       `;
 
-      document.getElementById('checkoutSubtotal').textContent = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString()}`;
-      document.getElementById('checkoutTotal').textContent = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString()}`;
+      const formattedPrice = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      document.getElementById('checkoutSubtotal').textContent = formattedPrice;
+      document.getElementById('checkoutTotal').textContent = formattedPrice;
 
       openModal('checkoutModal');
     }
 
-    // PROCESS PAYMENT & REMOVE PRODUCT FROM SUPABASE
-    async function handleMockPayment(e) {
+    function handleMockPayment(e) {
       e.preventDefault();
       if (!selectedCheckoutProduct) return;
 
-      const btn = document.getElementById('payBtn');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Authorizing Trade...`;
-
-      // 1. Delete item from database so it vanishes from marketplace
-      const { error } = await supabaseClient
-        .from('products')
-        .delete()
-        .eq('id', selectedCheckoutProduct.id);
-
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-lock"></i> Authorize & Pay`;
-
-      if (error) {
-        alert('Payment processing failed: ' + error.message);
+      const price = parseFloat(selectedCheckoutProduct.price);
+      if (userBalance < price) {
+        alert('Insufficient wallet balance to purchase this item.');
         return;
       }
 
-      // 2. Deduct mock wallet balance
-      if (userBalance >= selectedCheckoutProduct.price) {
-        userBalance -= selectedCheckoutProduct.price;
-        document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-      }
+      userBalance -= price;
+      document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
-      // 3. Set receipt information
-      document.getElementById('receiptTxnId').textContent = `#VP-${Math.floor(100000 + Math.random() * 900000)}`;
+      const txnId = '#VP-' + Math.floor(100000 + Math.random() * 900000);
+      document.getElementById('receiptTxnId').textContent = txnId;
       document.getElementById('receiptItemTitle').textContent = selectedCheckoutProduct.title;
-      document.getElementById('receiptAmount').textContent = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString()}`;
-
-      // 4. Reload product listings
-      await fetchProducts();
+      document.getElementById('receiptAmount').textContent = `₱${price.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
       closeModal('checkoutModal');
       openModal('successModal');
+      deleteListing(selectedCheckoutProduct.id);
     }
 
-    function renderSellerTable() {
-      const table = document.getElementById('sellerListingsTable');
-      document.getElementById('statActiveListings').textContent = products.length;
+    function switchTab(tab) {
+      ['store', 'seller', 'about', 'contact'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        const nav = document.getElementById(`nav-${t}`);
+        if (nav) nav.className = 'px-3 py-2 text-vapor-text hover:text-white transition-all';
+      });
 
-      table.innerHTML = products.map(p => `
-        <tr class="hover:bg-vapor-card/20 transition-colors">
-          <td class="p-3 font-semibold text-white">${p.title}</td>
-          <td class="p-3 text-vapor-muted">${p.game_title}</td>
-          <td class="p-3 font-bold text-vapor-green">₱${parseFloat(p.price).toLocaleString()}</td>
-          <td class="p-3"><span class="bg-vapor-green/10 text-vapor-green border border-vapor-green/30 px-2 py-0.5 rounded text-[10px]">Active</span></td>
-          <td class="p-3 text-right"><button onclick="deleteListing('${p.id}')" class="text-red-400 hover:text-red-300 font-bold"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>
-      `).join('');
-    }
-
-    function handleContactSubmit(e) {
-      e.preventDefault();
-      alert('Support ticket submitted.');
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      const activeNav = document.getElementById(`nav-${tab}`);
+      if (activeNav) activeNav.className = 'px-3 py-2 text-vapor-blue border-b-2 border-vapor-blue transition-all';
     }
 
     function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+    function updatePriceLabel(val) {
+      document.getElementById('priceValue').textContent = `₱${parseInt(val).toLocaleString()}`;
+      applyFilters();
+    }
+    function applyFilters() { renderProducts(); }
+    function handleSearch() { renderProducts(); }
+    function resetFilters() {
+      document.getElementById('priceRange').value = 25000;
+      document.getElementById('priceValue').textContent = '₱25,000';
+      document.querySelectorAll('.category-checkbox').forEach(cb => cb.checked = true);
+      renderProducts();
+    }
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      alert('Support ticket submitted! Our team will reach out shortly.');
+      e.target.reset();
+    }
   </script>
 </body>
 </html>
