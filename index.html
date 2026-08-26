@@ -322,7 +322,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card">
             <span class="text-xs text-vapor-muted uppercase block">Active Listings</span>
-            <span class="text-2xl font-black text-white" id="statActiveListings">3</span>
+            <span class="text-2xl font-black text-white" id="statActiveListings">0</span>
           </div>
           <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card">
             <span class="text-xs text-vapor-muted uppercase block">Completed Trades</span>
@@ -396,12 +396,8 @@
         <button onclick="closeModal('checkoutModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
-      <!-- Item Preview Summary -->
-      <div class="flex gap-4 bg-vapor-bg/70 p-3 rounded-lg border border-vapor-card" id="checkoutItemPreview">
-        <!-- Dynamic Item Card Injection -->
-      </div>
+      <div class="flex gap-4 bg-vapor-bg/70 p-3 rounded-lg border border-vapor-card" id="checkoutItemPreview"></div>
 
-      <!-- Payment Form -->
       <form onsubmit="handleMockPayment(event)" class="space-y-4 text-xs">
         <div>
           <label class="block font-bold text-vapor-muted uppercase mb-1">Select Payment Gateway</label>
@@ -457,7 +453,7 @@
     </div>
   </div>
 
-  <!-- ORDER SUCCESS / RECEIPT MODAL -->
+  <!-- SUCCESS MODAL -->
   <div id="successModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
     <div class="glass-panel max-w-sm w-full rounded-xl p-6 border border-vapor-green/40 space-y-4 text-center">
       <div class="w-14 h-14 bg-vapor-green/20 text-vapor-green border border-vapor-green/40 rounded-full flex items-center justify-center mx-auto text-2xl">
@@ -574,33 +570,9 @@
     </div>
   </div>
 
-  <!-- VOICEFLOW CHATBOT -->
-  <script type="text/javascript">
-    (function(d, t) {
-        var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
-        v.onload = function() {
-          window.voiceflow.chat.load({
-            verify: { projectID: '6a8db3e6e7a4a847e7352d7e' },
-            url: 'https://general-runtime.voiceflow.com',
-            versionID: 'production'
-          });
-        }
-        v.src = "https://cdn.voiceflow.com/widget/bundle.mjs"; v.type = "text/javascript"; s.parentNode.insertBefore(v, s);
-    })(document, 'script');
-  </script>
-
   <!-- CORE JS APP -->
   <script>
-    const SUPABASE_URL = 'https://itjzmiahlftsbwxjmeok.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0anptaWFobGZ0c2J3eGptZW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2Njc3NDEsImV4cCI6MjEwMzI0Mzc0MX0.g8vc2Xro7fQ7RtAjZ4k9gfpvsVNew5XvVLcwGS4phzA';
-    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
-    let activeGameFilter = 'All';
-    let currentUser = null;
-    let selectedCheckoutProduct = null;
-    let userBalance = 10000;
-
-    let products = [
+    const DEFAULT_PRODUCTS = [
       {
         id: '1',
         title: 'AK-47 | Redline (Minimal Wear)',
@@ -653,21 +625,36 @@
       }
     ];
 
-    let reviews = [
-      {
-        reviewer: 'ShadowNinja9',
-        rating: 5,
-        comment: 'Received the CS2 skin in trade within 2 minutes of paying via GCash. Super legit escrow!',
-        date: '2 hours ago'
-      }
+    // Read products from localStorage or fall back to default products
+    let products = JSON.parse(localStorage.getItem('vapor_products')) || DEFAULT_PRODUCTS;
+    let reviews = JSON.parse(localStorage.getItem('vapor_reviews')) || [
+      { reviewer: 'ShadowNinja9', rating: 5, comment: 'Received the CS2 skin in trade within 2 minutes of paying via GCash. Super legit escrow!', date: '2 hours ago' }
     ];
 
+    let activeGameFilter = 'All';
+    let currentUser = null;
+    let selectedCheckoutProduct = null;
+    let userBalance = parseFloat(localStorage.getItem('vapor_balance')) || 10000;
+
     document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
       renderProducts();
       renderReviews();
       updateCategoryCounts();
       renderSellerTable();
     });
+
+    function saveProducts() {
+      localStorage.setItem('vapor_products', JSON.stringify(products));
+    }
+
+    function saveReviews() {
+      localStorage.setItem('vapor_reviews', JSON.stringify(reviews));
+    }
+
+    function saveBalance() {
+      localStorage.setItem('vapor_balance', userBalance.toString());
+    }
 
     function switchTab(tabId) {
       ['store', 'seller', 'about', 'contact'].forEach(t => {
@@ -774,7 +761,6 @@
       renderProducts();
     }
 
-    /* MOCK CHECKOUT ENGINE */
     function initiateCheckout(productId) {
       selectedCheckoutProduct = products.find(p => p.id === productId);
       if (!selectedCheckoutProduct) return;
@@ -805,13 +791,12 @@
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-lock"></i> Authorize & Pay`;
 
-        // Update balance
         if(userBalance >= selectedCheckoutProduct.price) {
           userBalance -= selectedCheckoutProduct.price;
+          saveBalance();
           document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         }
 
-        // Show receipt
         document.getElementById('receiptTxnId').textContent = `#VP-${Math.floor(100000 + Math.random() * 900000)}`;
         document.getElementById('receiptItemTitle').textContent = selectedCheckoutProduct.title;
         document.getElementById('receiptAmount').textContent = `₱${selectedCheckoutProduct.price.toLocaleString()}`;
@@ -823,7 +808,9 @@
 
     function renderSellerTable() {
       const table = document.getElementById('sellerListingsTable');
-      table.innerHTML = products.slice(0, 3).map(p => `
+      document.getElementById('statActiveListings').textContent = products.length;
+
+      table.innerHTML = products.map(p => `
         <tr class="hover:bg-vapor-card/20 transition-colors">
           <td class="p-3 font-semibold text-white">${p.title}</td>
           <td class="p-3 text-vapor-muted">${p.game_title}</td>
@@ -836,7 +823,7 @@
 
     function handleCreateListing(e) {
       e.preventDefault();
-      products.unshift({
+      const newProduct = {
         id: Date.now().toString(),
         title: document.getElementById('newTitle').value,
         game_title: document.getElementById('newGame').value,
@@ -845,7 +832,11 @@
         image_url: document.getElementById('newImage').value,
         rating: 5.0,
         seller: currentUser ? currentUser.username : 'You'
-      });
+      };
+
+      products.unshift(newProduct);
+      saveProducts(); // Save array to persistent browser storage
+
       renderProducts();
       updateCategoryCounts();
       renderSellerTable();
@@ -854,6 +845,8 @@
 
     function deleteListing(id) {
       products = products.filter(p => p.id !== id);
+      saveProducts(); // Sync array removal to persistent browser storage
+
       renderProducts();
       updateCategoryCounts();
       renderSellerTable();
@@ -875,6 +868,7 @@
         comment: document.getElementById('reviewComment').value,
         date: 'Just now'
       });
+      saveReviews();
       renderReviews();
       closeModal('reviewModal');
     }
