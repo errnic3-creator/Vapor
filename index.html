@@ -527,7 +527,7 @@
             <input type="url" id="newImage" required placeholder="https://..." class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
           </div>
         </div>
-        <button type="submit" class="w-full bg-gradient-to-r from-vapor-greenDark to-vapor-green text-white font-extrabold py-3 rounded uppercase tracking-wider hover:brightness-110 transition-all">Publish Listing</button>
+        <button type="submit" id="submitListingBtn" class="w-full bg-gradient-to-r from-vapor-greenDark to-vapor-green text-white font-extrabold py-3 rounded uppercase tracking-wider hover:brightness-110 transition-all">Publish Listing</button>
       </form>
     </div>
   </div>
@@ -570,90 +570,45 @@
     </div>
   </div>
 
-  <!-- CORE JS APP -->
+  <!-- CORE JS APP WITH SUPABASE DATABASE INTEGRATION -->
   <script>
-    const DEFAULT_PRODUCTS = [
-      {
-        id: '1',
-        title: 'AK-47 | Redline (Minimal Wear)',
-        game_title: 'CS2',
-        category: 'Skins & Cosmetics',
-        price: 1850,
-        image_url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80',
-        rating: 4.9,
-        seller: 'AxiomTrader'
-      },
-      {
-        id: '2',
-        title: '4,350 Valorant Points (VP Instant Top-up)',
-        game_title: 'Valorant',
-        category: 'In-Game Currency',
-        price: 1650,
-        image_url: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=600&q=80',
-        rating: 5.0,
-        seller: 'VP_Vault_PH'
-      },
-      {
-        id: '3',
-        title: 'AR 58 Genshin Account - C2 Raiden + Signature',
-        game_title: 'Genshin Impact',
-        category: 'Tradeable Items',
-        price: 8500,
-        image_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80',
-        rating: 4.8,
-        seller: 'TeyvatWhale'
-      },
-      {
-        id: '4',
-        title: 'Dragonclaw Hook (Clean)',
-        game_title: 'Dota 2',
-        category: 'Skins & Cosmetics',
-        price: 12400,
-        image_url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80',
-        rating: 5.0,
-        seller: 'SteamDotaMarket'
-      },
-      {
-        id: '5',
-        title: '10,000 Robux Digital Code',
-        game_title: 'Roblox',
-        category: 'In-Game Currency',
-        price: 3200,
-        image_url: 'https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?auto=format&fit=crop&w=600&q=80',
-        rating: 4.7,
-        seller: 'BloxStore'
-      }
-    ];
+    const SUPABASE_URL = 'https://itjzmiahlftsbwxjmeok.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0anptaWFobGZ0c2J3eGptZW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2Njc3NDEsImV4cCI6MjEwMzI0Mzc0MX0.g8vc2Xro7fQ7RtAjZ4k9gfpvsVNew5XvVLcwGS4phzA';
 
-    // Read products from localStorage or fall back to default products
-    let products = JSON.parse(localStorage.getItem('vapor_products')) || DEFAULT_PRODUCTS;
-    let reviews = JSON.parse(localStorage.getItem('vapor_reviews')) || [
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let products = [];
+    let reviews = [
       { reviewer: 'ShadowNinja9', rating: 5, comment: 'Received the CS2 skin in trade within 2 minutes of paying via GCash. Super legit escrow!', date: '2 hours ago' }
     ];
 
     let activeGameFilter = 'All';
     let currentUser = null;
     let selectedCheckoutProduct = null;
-    let userBalance = parseFloat(localStorage.getItem('vapor_balance')) || 10000;
+    let userBalance = 10000;
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
-      renderProducts();
+      await fetchProducts();
       renderReviews();
-      updateCategoryCounts();
-      renderSellerTable();
     });
 
-    function saveProducts() {
-      localStorage.setItem('vapor_products', JSON.stringify(products));
-    }
+    // FETCH PRODUCTS FROM SUPABASE DATABASE
+    async function fetchProducts() {
+      const { data, error } = await supabaseClient
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    function saveReviews() {
-      localStorage.setItem('vapor_reviews', JSON.stringify(reviews));
-    }
+      if (error) {
+        console.error('Error fetching database products:', error);
+      } else {
+        products = data || [];
+      }
 
-    function saveBalance() {
-      localStorage.setItem('vapor_balance', userBalance.toString());
+      renderProducts();
+      updateCategoryCounts();
+      renderSellerTable();
     }
 
     function switchTab(tabId) {
@@ -695,7 +650,7 @@
       if (sortVal === 'price-high') filtered.sort((a, b) => b.price - a.price);
 
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-vapor-muted bg-vapor-surface rounded-xl border border-vapor-card"><p class="text-sm font-semibold">No items match your active filters.</p></div>`;
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-vapor-muted bg-vapor-surface rounded-xl border border-vapor-card"><p class="text-sm font-semibold">No active listings found in database.</p></div>`;
         return;
       }
 
@@ -703,21 +658,21 @@
         <div class="bg-vapor-surface hover:bg-vapor-card/80 border border-vapor-card hover:border-vapor-blue/50 rounded-xl overflow-hidden transition-all flex flex-col justify-between group shadow-lg">
           <div>
             <div class="relative h-44 overflow-hidden bg-vapor-bg">
-              <img src="${p.image_url}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              <img src="${p.image_url}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'">
               <span class="absolute top-2 left-2 bg-vapor-bg/90 backdrop-blur-md text-vapor-blue text-[10px] font-bold px-2 py-0.5 rounded border border-vapor-blue/30 uppercase">${p.game_title}</span>
             </div>
             <div class="p-4 space-y-2">
               <span class="text-[10px] text-vapor-muted uppercase block">${p.category}</span>
               <h4 class="font-bold text-white text-sm line-clamp-1 group-hover:text-vapor-blue transition-colors">${p.title}</h4>
               <div class="flex items-center gap-2 text-xs text-vapor-muted">
-                <i class="fa-solid fa-circle-user text-vapor-blue"></i><span>${p.seller}</span>
+                <i class="fa-solid fa-circle-user text-vapor-blue"></i><span>${p.seller || 'Anonymous'}</span>
               </div>
             </div>
           </div>
           <div class="p-4 pt-0 border-t border-vapor-card/40 flex items-center justify-between mt-3">
             <div>
               <span class="text-[10px] text-vapor-muted block">Price</span>
-              <span class="text-base font-extrabold text-vapor-green">₱${p.price.toLocaleString()}</span>
+              <span class="text-base font-extrabold text-vapor-green">₱${parseFloat(p.price).toLocaleString()}</span>
             </div>
             <button onclick="initiateCheckout('${p.id}')" class="bg-gradient-to-r from-vapor-greenDark to-vapor-green hover:brightness-110 text-white font-extrabold text-xs px-4 py-2 rounded transition-all shadow">Buy Now</button>
           </div>
@@ -767,16 +722,16 @@
 
       const previewContainer = document.getElementById('checkoutItemPreview');
       previewContainer.innerHTML = `
-        <img src="${selectedCheckoutProduct.image_url}" class="w-16 h-16 object-cover rounded border border-vapor-card">
+        <img src="${selectedCheckoutProduct.image_url}" class="w-16 h-16 object-cover rounded border border-vapor-card" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80'">
         <div class="flex-grow min-w-0">
           <span class="text-[10px] text-vapor-blue uppercase font-bold">${selectedCheckoutProduct.game_title}</span>
           <h4 class="text-xs font-bold text-white truncate">${selectedCheckoutProduct.title}</h4>
-          <p class="text-xs text-vapor-muted">Seller: ${selectedCheckoutProduct.seller}</p>
+          <p class="text-xs text-vapor-muted">Seller: ${selectedCheckoutProduct.seller || 'Anonymous'}</p>
         </div>
       `;
 
-      document.getElementById('checkoutSubtotal').textContent = `₱${selectedCheckoutProduct.price.toLocaleString()}`;
-      document.getElementById('checkoutTotal').textContent = `₱${selectedCheckoutProduct.price.toLocaleString()}`;
+      document.getElementById('checkoutSubtotal').textContent = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString()}`;
+      document.getElementById('checkoutTotal').textContent = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString()}`;
 
       openModal('checkoutModal');
     }
@@ -793,13 +748,12 @@
 
         if(userBalance >= selectedCheckoutProduct.price) {
           userBalance -= selectedCheckoutProduct.price;
-          saveBalance();
           document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
         }
 
         document.getElementById('receiptTxnId').textContent = `#VP-${Math.floor(100000 + Math.random() * 900000)}`;
         document.getElementById('receiptItemTitle').textContent = selectedCheckoutProduct.title;
-        document.getElementById('receiptAmount').textContent = `₱${selectedCheckoutProduct.price.toLocaleString()}`;
+        document.getElementById('receiptAmount').textContent = `₱${parseFloat(selectedCheckoutProduct.price).toLocaleString()}`;
 
         closeModal('checkoutModal');
         openModal('successModal');
@@ -814,42 +768,60 @@
         <tr class="hover:bg-vapor-card/20 transition-colors">
           <td class="p-3 font-semibold text-white">${p.title}</td>
           <td class="p-3 text-vapor-muted">${p.game_title}</td>
-          <td class="p-3 font-bold text-vapor-green">₱${p.price.toLocaleString()}</td>
+          <td class="p-3 font-bold text-vapor-green">₱${parseFloat(p.price).toLocaleString()}</td>
           <td class="p-3"><span class="bg-vapor-green/10 text-vapor-green border border-vapor-green/30 px-2 py-0.5 rounded text-[10px]">Active</span></td>
           <td class="p-3 text-right"><button onclick="deleteListing('${p.id}')" class="text-red-400 hover:text-red-300 font-bold"><i class="fa-solid fa-trash"></i></button></td>
         </tr>
       `).join('');
     }
 
-    function handleCreateListing(e) {
+    // SAVE NEW LISTING TO SUPABASE
+    async function handleCreateListing(e) {
       e.preventDefault();
+      const btn = document.getElementById('submitListingBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Publishing...`;
+
       const newProduct = {
-        id: Date.now().toString(),
         title: document.getElementById('newTitle').value,
         game_title: document.getElementById('newGame').value,
         category: document.getElementById('newCategory').value,
         price: parseFloat(document.getElementById('newPrice').value),
         image_url: document.getElementById('newImage').value,
-        rating: 5.0,
         seller: currentUser ? currentUser.username : 'You'
       };
 
-      products.unshift(newProduct);
-      saveProducts(); // Save array to persistent browser storage
+      const { data, error } = await supabaseClient
+        .from('products')
+        .insert([newProduct])
+        .select();
 
-      renderProducts();
-      updateCategoryCounts();
-      renderSellerTable();
+      btn.disabled = false;
+      btn.innerHTML = `Publish Listing`;
+
+      if (error) {
+        alert('Failed to publish listing: ' + error.message);
+        return;
+      }
+
+      await fetchProducts();
       closeModal('sellModal');
+      e.target.reset();
     }
 
-    function deleteListing(id) {
-      products = products.filter(p => p.id !== id);
-      saveProducts(); // Sync array removal to persistent browser storage
+    // DELETE LISTING FROM SUPABASE
+    async function deleteListing(id) {
+      const { error } = await supabaseClient
+        .from('products')
+        .delete()
+        .eq('id', id);
 
-      renderProducts();
-      updateCategoryCounts();
-      renderSellerTable();
+      if (error) {
+        alert('Failed to delete item: ' + error.message);
+        return;
+      }
+
+      await fetchProducts();
     }
 
     function renderReviews() {
@@ -868,7 +840,6 @@
         comment: document.getElementById('reviewComment').value,
         date: 'Just now'
       });
-      saveReviews();
       renderReviews();
       closeModal('reviewModal');
     }
