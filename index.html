@@ -5,16 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VAPOR | Peer-to-Peer Gaming Marketplace</title>
   
-  <!-- Tailwind CSS CDN -->
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <!-- Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- Tailwind Theme Configuration -->
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -22,485 +14,278 @@
         extend: {
           colors: {
             vapor: {
-              bg: '#171a21',
-              surface: '#1b2838',
-              card: '#2a475e',
-              blue: '#66c0f4',
-              greenDark: '#5c7e10',
-              green: '#a4d007',
-              text: '#c7d5e0',
-              muted: '#8f98a0',
-              hover: '#316282'
+              bg: '#0b0e14',
+              surface: '#121824',
+              card: '#1b2234',
+              hover: '#242e45',
+              blue: '#3b82f6',
+              green: '#22c55e',
+              greenDark: '#15803d',
+              text: '#94a3b8',
+              muted: '#64748b'
             }
-          },
-          fontFamily: {
-            sans: ['Motiva Sans', 'Segoe UI', 'sans-serif']
           }
         }
       }
     }
   </script>
 
-  <style>
-    ::-webkit-scrollbar {
-      width: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #171a21;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #2a475e;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #66c0f4;
-    }
-    .glass-panel {
-      background: rgba(27, 40, 56, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(102, 192, 244, 0.15);
-    }
-  </style>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-vapor-bg text-vapor-text min-h-screen flex flex-col font-sans antialiased selection:bg-vapor-blue selection:text-white">
+<body class="bg-vapor-bg text-gray-100 font-sans min-h-screen flex flex-col antialiased selection:bg-vapor-blue selection:text-white">
 
-  <!-- GLOBAL HEADER -->
-  <header class="bg-vapor-bg/95 sticky top-0 z-40 border-b border-vapor-card/50 backdrop-blur-md shadow-2xl">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 bg-vapor-surface/90 backdrop-blur-md border-b border-vapor-card/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
       
       <!-- Brand Logo -->
-      <div class="flex items-center gap-8">
-        <a href="#" onclick="switchTab('store')" class="flex items-center gap-3 group">
-          <div class="w-10 h-10 bg-gradient-to-br from-vapor-blue to-blue-700 rounded flex items-center justify-center text-vapor-bg text-2xl font-black transform group-hover:rotate-6 transition-transform">
-            <i class="fa-solid fa-gamepad"></i>
+      <div class="flex items-center gap-6">
+        <a href="#" onclick="switchTab('store')" class="flex items-center gap-2 group">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-vapor-blue to-indigo-600 flex items-center justify-center shadow-lg shadow-vapor-blue/20 group-hover:scale-105 transition-transform">
+            <i class="fa-solid fa-gamepad text-white text-lg"></i>
           </div>
-          <span class="text-2xl font-extrabold tracking-wider text-white group-hover:text-vapor-blue transition-colors uppercase">
-            Vapor
-          </span>
+          <span class="text-xl font-black tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-vapor-blue">VAPOR</span>
         </a>
 
-        <!-- Global Search Bar -->
-        <div class="relative hidden md:block w-72 lg:w-96">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-vapor-muted text-sm"></i>
-          <input 
-            type="text" 
-            id="globalSearch"
-            placeholder="Search CS2 skins, Valorant Points, Genshin Accounts..." 
-            oninput="handleSearch(this.value)"
-            class="w-full pl-10 pr-4 py-2 bg-vapor-surface/80 border border-vapor-card rounded text-sm text-white placeholder-vapor-muted focus:outline-none focus:border-vapor-blue focus:ring-1 focus:ring-vapor-blue transition-all"
-          >
-        </div>
+        <!-- Main Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-1 text-xs font-bold uppercase tracking-wider">
+          <button id="nav-store" onclick="switchTab('store')" class="px-3 py-2 text-vapor-blue border-b-2 border-vapor-blue transition-all">Marketplace</button>
+          <button id="nav-seller" onclick="switchTab('seller')" class="px-3 py-2 text-vapor-text hover:text-white transition-all">Seller Hub</button>
+          <button id="nav-about" onclick="switchTab('about')" class="px-3 py-2 text-vapor-text hover:text-white transition-all">Reviews & About</button>
+          <button id="nav-contact" onclick="switchTab('contact')" class="px-3 py-2 text-vapor-text hover:text-white transition-all">Support</button>
+        </nav>
       </div>
 
-      <!-- User Navigation & Balance Widget -->
-      <div class="flex items-center gap-4">
-        
-        <!-- Wallet Display -->
-        <div class="hidden sm:flex items-center gap-3 bg-vapor-surface border border-vapor-card px-3.5 py-1.5 rounded">
-          <i class="fa-solid fa-wallet text-vapor-green"></i>
-          <div class="text-xs">
-            <span class="block text-vapor-muted uppercase tracking-wider text-[10px]">Balance</span>
-            <span class="font-bold text-vapor-green" id="walletDisplay">₱10,000.00</span>
-          </div>
+      <!-- User Actions & Wallet -->
+      <div class="flex items-center gap-3">
+        <!-- Mock Wallet Balance -->
+        <div class="bg-vapor-card border border-vapor-card/80 px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-inner">
+          <i class="fa-solid fa-wallet text-vapor-green text-xs"></i>
+          <span id="walletDisplay" class="text-xs font-bold text-vapor-green">₱10,000.00</span>
         </div>
 
-        <!-- Notifications -->
-        <button class="relative p-2 text-vapor-muted hover:text-white transition-colors rounded-lg hover:bg-vapor-card/50">
-          <i class="fa-solid fa-bell text-lg"></i>
-          <span class="absolute top-1 right-1 w-2 h-2 bg-vapor-blue rounded-full animate-ping"></span>
-          <span class="absolute top-1 right-1 w-2 h-2 bg-vapor-blue rounded-full"></span>
+        <!-- Sell Button -->
+        <button onclick="openModal('sellModal')" class="bg-gradient-to-r from-vapor-blue to-blue-600 hover:brightness-110 text-white font-extrabold text-xs px-3.5 py-2 rounded-lg transition-all shadow-md shadow-vapor-blue/20 flex items-center gap-1.5">
+          <i class="fa-solid fa-plus"></i>
+          <span class="hidden sm:inline">Sell Item</span>
         </button>
 
-        <!-- Profile & Account Status -->
-        <div id="authContainer" class="flex items-center gap-2">
-          <button onclick="openModal('registerModal')" class="bg-vapor-card hover:bg-vapor-hover text-white text-xs font-semibold px-4 py-2 rounded transition-all border border-vapor-blue/30 hover:border-vapor-blue">
-            <i class="fa-solid fa-user-plus mr-1.5"></i> Register / Login
+        <!-- Dynamic Auth Container -->
+        <div id="authContainer">
+          <button onclick="openModal('registerModal')" class="bg-vapor-card hover:bg-vapor-hover text-white text-xs font-semibold px-3 py-2 rounded-lg transition-all border border-vapor-blue/30 hover:border-vapor-blue">
+            <i class="fa-solid fa-user-plus mr-1"></i> Account
           </button>
         </div>
       </div>
+
     </div>
   </header>
 
-  <!-- NAVIGATION BAR -->
-  <nav class="bg-vapor-surface border-b border-vapor-card/40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center space-x-1 overflow-x-auto py-2">
-      <button onclick="switchTab('store')" id="nav-store" class="nav-btn px-4 py-2 text-sm font-semibold text-vapor-blue border-b-2 border-vapor-blue">
-        <i class="fa-solid fa-store mr-2"></i>Store Page
-      </button>
-      <button onclick="switchTab('seller')" id="nav-seller" class="nav-btn px-4 py-2 text-sm font-semibold text-vapor-text hover:text-white hover:bg-vapor-card/30 rounded transition-all">
-        <i class="fa-solid fa-chart-line mr-2"></i>Seller Dashboard
-      </button>
-      <button onclick="switchTab('about')" id="nav-about" class="nav-btn px-4 py-2 text-sm font-semibold text-vapor-text hover:text-white hover:bg-vapor-card/30 rounded transition-all">
-        <i class="fa-solid fa-shield-halved mr-2"></i>About Us
-      </button>
-      <button onclick="switchTab('contact')" id="nav-contact" class="nav-btn px-4 py-2 text-sm font-semibold text-vapor-text hover:text-white hover:bg-vapor-card/30 rounded transition-all">
-        <i class="fa-solid fa-headset mr-2"></i>Contacts & Support
-      </button>
-    </div>
-  </nav>
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-  <!-- MAIN CONTAINER -->
-  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-    <!-- STORE TAB CONTENT -->
-    <div id="tab-store" class="space-y-8">
+    <!-- ==================== TAB 1: STORE / MARKETPLACE ==================== -->
+    <section id="tab-store" class="space-y-6">
       
-      <!-- HERO CTA SECTION -->
-      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 relative rounded-xl overflow-hidden bg-gradient-to-r from-vapor-card to-vapor-surface p-8 sm:p-10 flex flex-col justify-end border border-vapor-blue/20 shadow-2xl min-h-[280px]">
-          <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#66c0f4_1px,transparent_1px)] [background-size:16px_16px]"></div>
-          <div class="relative z-10 space-y-3">
-            <span class="inline-block px-3 py-1 bg-vapor-blue/10 border border-vapor-blue/40 text-vapor-blue text-xs font-bold tracking-widest rounded uppercase">
-              P2P Escrow Protection
-            </span>
-            <h1 class="text-3xl sm:text-4xl font-extrabold uppercase text-white tracking-tight">
-              BUY. SELL. UPGRADE.
-            </h1>
-            <p class="text-vapor-text text-sm sm:text-base max-w-xl">
-              Trade rare skins, accounts, and in-game gold directly with players worldwide. Guaranteed payouts via GCash & local banking channels.
-            </p>
-            <div class="flex flex-wrap gap-4 pt-2">
-              <a href="#market-grid" class="bg-gradient-to-r from-vapor-greenDark to-vapor-green hover:brightness-110 text-white font-bold text-sm px-6 py-3 rounded shadow-lg transition-all flex items-center gap-2">
-                <i class="fa-solid fa-cart-shopping"></i> Shop Now
-              </a>
-              <button onclick="openModal('sellModal')" class="bg-vapor-card hover:bg-vapor-hover border border-vapor-blue/40 text-white font-bold text-sm px-6 py-3 rounded transition-all flex items-center gap-2">
-                <i class="fa-solid fa-tag"></i> Start Selling
-              </button>
-            </div>
-          </div>
+      <!-- HERO BANNER -->
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-vapor-surface to-slate-900 border border-vapor-card p-6 md:p-8 shadow-2xl">
+        <div class="relative z-10 max-w-2xl space-y-3">
+          <span class="bg-vapor-blue/10 text-vapor-blue border border-vapor-blue/30 text-[10px] font-extrabold tracking-widest uppercase px-2.5 py-1 rounded-full">Secure Peer-to-Peer</span>
+          <h1 class="text-2xl md:text-4xl font-black text-white tracking-tight">BUY, SELL & TRADE IN-GAME ASSETS</h1>
+          <p class="text-xs md:text-sm text-vapor-text leading-relaxed">Instant automated escrow transfer for CS2 skins, Valorant accounts, Roblox Robux, Genshin Impact accounts, and Dota 2 items.</p>
         </div>
+      </div>
 
-        <div class="glass-panel rounded-xl p-6 flex flex-col justify-between border border-vapor-card">
-          <div class="space-y-4">
-            <div class="flex items-center justify-between">
-              <h3 class="text-white font-bold text-lg uppercase tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-bolt text-vapor-blue"></i> Instant Payouts
-              </h3>
-              <span class="text-xs bg-vapor-green/10 text-vapor-green font-semibold px-2 py-0.5 rounded border border-vapor-green/30">Live</span>
-            </div>
-            <p class="text-xs text-vapor-muted leading-relaxed">
-              Earnings from completed trades are held securely in escrow and released directly to your verified payout wallet upon item delivery confirmation.
-            </p>
-            <div class="space-y-2 border-t border-vapor-card/60 pt-3">
-              <div class="flex justify-between text-xs">
-                <span class="text-vapor-muted">Accepted Gateway:</span>
-                <span class="text-white font-semibold flex items-center gap-1">
-                  <i class="fa-solid fa-mobile-screen text-vapor-blue"></i> GCash / Maya
-                </span>
-              </div>
-              <div class="flex justify-between text-xs">
-                <span class="text-vapor-muted">Avg. Transfer Time:</span>
-                <span class="text-vapor-green font-semibold">&lt; 3 minutes</span>
-              </div>
-            </div>
-          </div>
-          <button onclick="openModal('registerModal')" class="w-full mt-4 bg-vapor-surface hover:bg-vapor-card text-vapor-blue hover:text-white font-semibold text-xs py-2.5 rounded border border-vapor-blue/30 transition-all text-center">
-            Link GCash Account
-          </button>
-        </div>
-      </section>
-
-      <!-- MARKETPLACE SECTION -->
-      <section id="market-grid" class="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
+      <!-- SEARCH & FILTER BAR -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         
-        <!-- Sidebar Filters -->
-        <aside class="space-y-6">
-          <div class="glass-panel rounded-xl p-5 border border-vapor-card/80 space-y-6 sticky top-28">
-            <div class="flex items-center justify-between border-b border-vapor-card pb-3">
-              <h3 class="font-extrabold text-white uppercase text-sm tracking-wider flex items-center gap-2">
-                <i class="fa-solid fa-filter text-vapor-blue"></i> Market Filters
-              </h3>
-              <button onclick="resetFilters()" class="text-xs text-vapor-muted hover:text-vapor-blue transition-colors">Reset</button>
-            </div>
+        <!-- SIDEBAR FILTERS -->
+        <aside class="space-y-6 bg-vapor-surface p-5 rounded-xl border border-vapor-card h-fit">
+          <div class="flex justify-between items-center pb-3 border-b border-vapor-card">
+            <h3 class="font-bold text-sm text-white uppercase tracking-wider"><i class="fa-solid fa-filter text-vapor-blue mr-2"></i> Filters</h3>
+            <button onclick="resetFilters()" class="text-[11px] text-vapor-muted hover:text-vapor-blue font-semibold uppercase">Reset</button>
+          </div>
 
-            <div class="space-y-2">
-              <label class="text-xs font-bold text-vapor-muted uppercase tracking-wider block">Select Game</label>
-              <div class="space-y-1" id="gameFilters">
-                <button onclick="filterGame('All', event)" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold bg-vapor-blue/20 text-vapor-blue border border-vapor-blue/40 transition-all flex justify-between items-center">
-                  <span>All Supported Games</span>
-                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-white" id="cnt-all">0</span>
-                </button>
-                <button onclick="filterGame('CS2', event)" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
-                  <span>Counter-Strike 2</span>
-                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-cs2">0</span>
-                </button>
-                <button onclick="filterGame('Valorant', event)" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
-                  <span>Valorant</span>
-                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-val">0</span>
-                </button>
-                <button onclick="filterGame('Genshin Impact', event)" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
-                  <span>Genshin Impact</span>
-                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-gen">0</span>
-                </button>
-                <button onclick="filterGame('Dota 2', event)" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
-                  <span>Dota 2</span>
-                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-dota">0</span>
-                </button>
-                <button onclick="filterGame('Roblox', event)" class="filter-game-btn w-full text-left px-3 py-2 rounded text-xs font-semibold text-vapor-text hover:bg-vapor-card/60 transition-all flex justify-between items-center">
-                  <span>Roblox</span>
-                  <span class="text-[10px] bg-vapor-surface px-1.5 py-0.5 rounded text-vapor-muted" id="cnt-roblox">0</span>
-                </button>
-              </div>
+          <!-- Price Range Slider -->
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs">
+              <span class="text-vapor-muted font-bold">Max Price:</span>
+              <span id="priceValue" class="text-vapor-green font-extrabold">₱25,000</span>
             </div>
+            <input type="range" id="priceRange" min="50" max="25000" step="50" value="25000" oninput="updatePriceLabel(this.value)" class="w-full accent-vapor-blue bg-vapor-card rounded-lg h-1.5 cursor-pointer">
+          </div>
 
-            <div class="space-y-2 border-t border-vapor-card/60 pt-4">
-              <label class="text-xs font-bold text-vapor-muted uppercase tracking-wider block">Item Category</label>
-              <div class="space-y-1">
-                <label class="flex items-center gap-2 text-xs text-vapor-text hover:text-white cursor-pointer py-1">
-                  <input type="checkbox" checked value="Skins & Cosmetics" onchange="applyFilters()" class="category-checkbox rounded bg-vapor-surface border-vapor-card text-vapor-blue focus:ring-0">
-                  <span>Skins & Cosmetics</span>
-                </label>
-                <label class="flex items-center gap-2 text-xs text-vapor-text hover:text-white cursor-pointer py-1">
-                  <input type="checkbox" checked value="In-Game Currency" onchange="applyFilters()" class="category-checkbox rounded bg-vapor-surface border-vapor-card text-vapor-blue focus:ring-0">
-                  <span>In-Game Currency / Top-ups</span>
-                </label>
-                <label class="flex items-center gap-2 text-xs text-vapor-text hover:text-white cursor-pointer py-1">
-                  <input type="checkbox" checked value="Tradeable Items" onchange="applyFilters()" class="category-checkbox rounded bg-vapor-surface border-vapor-card text-vapor-blue focus:ring-0">
-                  <span>Tradeable Accounts & Keys</span>
-                </label>
-              </div>
+          <!-- Category Checkboxes -->
+          <div class="space-y-2">
+            <span class="text-xs text-vapor-muted font-bold uppercase block">Categories</span>
+            <div class="space-y-1.5 text-xs">
+              <label class="flex items-center gap-2 text-vapor-text hover:text-white cursor-pointer">
+                <input type="checkbox" value="Skins & Cosmetics" checked onchange="applyFilters()" class="category-checkbox accent-vapor-blue rounded"> Skins & Cosmetics
+              </label>
+              <label class="flex items-center gap-2 text-vapor-text hover:text-white cursor-pointer">
+                <input type="checkbox" value="Accounts" checked onchange="applyFilters()" class="category-checkbox accent-vapor-blue rounded"> Accounts
+              </label>
+              <label class="flex items-center gap-2 text-vapor-text hover:text-white cursor-pointer">
+                <input type="checkbox" value="In-Game Currency" checked onchange="applyFilters()" class="category-checkbox accent-vapor-blue rounded"> In-Game Currency
+              </label>
+              <label class="flex items-center gap-2 text-vapor-text hover:text-white cursor-pointer">
+                <input type="checkbox" value="Items & Keys" checked onchange="applyFilters()" class="category-checkbox accent-vapor-blue rounded"> Items & Keys
+              </label>
             </div>
-
-            <div class="space-y-2 border-t border-vapor-card/60 pt-4">
-              <div class="flex justify-between items-center">
-                <label class="text-xs font-bold text-vapor-muted uppercase tracking-wider">Max Price</label>
-                <span class="text-xs font-bold text-vapor-green" id="priceValue">₱25,000</span>
-              </div>
-              <input type="range" id="priceRange" min="100" max="25000" step="100" value="25000" oninput="updatePriceLabel(this.value)" class="w-full accent-vapor-blue bg-vapor-surface h-1.5 rounded cursor-pointer">
-            </div>
-
           </div>
         </aside>
 
-        <!-- Main Product Grid -->
-        <main class="lg:col-span-2 space-y-6">
-          <div class="flex items-center justify-between bg-vapor-surface p-4 rounded-xl border border-vapor-card">
-            <div>
-              <h2 class="text-xl font-extrabold uppercase text-white tracking-wide">Marketplace Listings</h2>
-              <p class="text-xs text-vapor-muted">Showing live trade listings verified by Vapor Escrow</p>
+        <!-- MARKETPLACE GRID AREA -->
+        <div class="lg:col-span-3 space-y-4">
+          
+          <!-- Top Control Strip -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-vapor-surface p-3 rounded-xl border border-vapor-card">
+            <!-- Search Field -->
+            <div class="relative w-full sm:w-80">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-vapor-muted text-xs"></i>
+              <input type="text" id="globalSearch" oninput="handleSearch(this.value)" placeholder="Search items or games..." class="w-full bg-vapor-bg text-xs text-white pl-8 pr-3 py-2 rounded-lg border border-vapor-card focus:border-vapor-blue focus:outline-none">
             </div>
-            <select id="sortSelect" onchange="applyFilters()" class="bg-vapor-bg border border-vapor-card text-xs text-vapor-text rounded px-3 py-1.5 focus:outline-none focus:border-vapor-blue">
-              <option value="newest">Sort by: Newest First</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-            </select>
+
+            <!-- Sort Selector -->
+            <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+              <span class="text-xs text-vapor-muted font-semibold whitespace-nowrap">Sort:</span>
+              <select id="sortSelect" onchange="applyFilters()" class="bg-vapor-bg text-xs text-white px-3 py-2 rounded-lg border border-vapor-card focus:border-vapor-blue focus:outline-none">
+                <option value="newest">Newest First</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+            </div>
           </div>
 
-          <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
-        </main>
-      </section>
+          <!-- Game Filter Chips -->
+          <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <button onclick="filterGame('All', event)" class="filter-game-btn bg-vapor-blue/20 text-vapor-blue border border-vapor-blue/40 px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">All Games (<span id="cnt-all">0</span>)</button>
+            <button onclick="filterGame('CS2', event)" class="filter-game-btn bg-vapor-surface text-vapor-text hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">CS2 (<span id="cnt-cs2">0</span>)</button>
+            <button onclick="filterGame('Valorant', event)" class="filter-game-btn bg-vapor-surface text-vapor-text hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">Valorant (<span id="cnt-val">0</span>)</button>
+            <button onclick="filterGame('Genshin Impact', event)" class="filter-game-btn bg-vapor-surface text-vapor-text hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">Genshin (<span id="cnt-gen">0</span>)</button>
+            <button onclick="filterGame('Dota 2', event)" class="filter-game-btn bg-vapor-surface text-vapor-text hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">Dota 2 (<span id="cnt-dota">0</span>)</button>
+            <button onclick="filterGame('Roblox', event)" class="filter-game-btn bg-vapor-surface text-vapor-text hover:text-white px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap">Roblox (<span id="cnt-roblox">0</span>)</button>
+          </div>
 
-      <!-- REVIEWS SECTION -->
-      <section class="bg-vapor-surface border border-vapor-card rounded-xl p-6 sm:p-8 space-y-6">
-        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b border-vapor-card pb-4">
+          <!-- Product Cards Grid -->
+          <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Dynamic Content Injected via JS -->
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: SELLER HUB ==================== -->
+    <section id="tab-seller" class="hidden space-y-6">
+      <div class="bg-vapor-surface p-6 rounded-xl border border-vapor-card space-y-4">
+        <div class="flex justify-between items-center">
           <div>
-            <h2 class="text-xl font-extrabold text-white uppercase tracking-wider">Verified Trade Reviews</h2>
-            <p class="text-xs text-vapor-muted">Real feedback submitted by buyers upon item delivery</p>
+            <h2 class="text-lg font-bold text-white">Seller Dashboard</h2>
+            <p class="text-xs text-vapor-muted">Manage your active marketplace listings and trade status.</p>
           </div>
-          <button onclick="openModal('reviewModal')" class="bg-vapor-card hover:bg-vapor-hover border border-vapor-blue/30 text-vapor-blue hover:text-white font-semibold text-xs px-4 py-2 rounded transition-all flex items-center gap-2">
-            <i class="fa-solid fa-pen"></i> Leave Trade Feedback
-          </button>
-        </div>
-        <div id="reviewsList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </section>
-
-    </div>
-
-    <!-- SELLER TAB -->
-    <div id="tab-seller" class="hidden space-y-8">
-      <div class="bg-vapor-surface border border-vapor-card rounded-xl p-8 space-y-6">
-        <div class="flex justify-between items-center border-b border-vapor-card pb-4">
-          <div>
-            <h2 class="text-2xl font-extrabold text-white uppercase">Seller Portal</h2>
-            <p class="text-xs text-vapor-muted">Manage active listings, review pending orders, and payout to GCash.</p>
-          </div>
-          <button onclick="openModal('sellModal')" class="bg-gradient-to-r from-vapor-greenDark to-vapor-green text-white font-bold text-xs px-5 py-2.5 rounded transition-all shadow">
-            <i class="fa-solid fa-plus mr-1"></i> New Item Listing
-          </button>
+          <button onclick="openModal('sellModal')" class="bg-vapor-blue text-white text-xs font-bold px-4 py-2 rounded-lg">List New Item</button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card">
-            <span class="text-xs text-vapor-muted uppercase block">Active Listings</span>
-            <span class="text-2xl font-black text-white" id="statActiveListings">0</span>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 py-2">
+          <div class="bg-vapor-bg p-4 rounded-lg border border-vapor-card">
+            <span class="text-xs text-vapor-muted block">Active Listings</span>
+            <span id="statActiveListings" class="text-xl font-bold text-white">0</span>
           </div>
-          <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card">
-            <span class="text-xs text-vapor-muted uppercase block">Completed Trades</span>
-            <span class="text-2xl font-black text-vapor-blue">18</span>
+          <div class="bg-vapor-bg p-4 rounded-lg border border-vapor-card">
+            <span class="text-xs text-vapor-muted block">Escrow Protected</span>
+            <span class="text-xl font-bold text-vapor-green">100% Guaranteed</span>
           </div>
-          <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card">
-            <span class="text-xs text-vapor-muted uppercase block">Total Earned</span>
-            <span class="text-2xl font-black text-vapor-green">₱14,850.00</span>
+          <div class="bg-vapor-bg p-4 rounded-lg border border-vapor-card">
+            <span class="text-xs text-vapor-muted block">Platform Fee</span>
+            <span class="text-xl font-bold text-vapor-blue">0.00%</span>
           </div>
         </div>
 
-        <h3 class="text-sm font-bold text-white uppercase tracking-wider pt-2">Your Live Market Listings</h3>
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-vapor-card/40 text-vapor-muted uppercase">
-                <th class="p-3">Item Title</th>
+          <table class="w-full text-left text-xs text-vapor-text">
+            <thead class="bg-vapor-bg text-vapor-muted uppercase font-bold border-b border-vapor-card">
+              <tr>
+                <th class="p-3">Title</th>
                 <th class="p-3">Game</th>
                 <th class="p-3">Price</th>
                 <th class="p-3">Status</th>
                 <th class="p-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody id="sellerListingsTable" class="divide-y divide-vapor-card/40"></tbody>
+            <tbody id="sellerListingsTable" class="divide-y divide-vapor-card/50">
+              <!-- Dynamic Rows -->
+            </tbody>
           </table>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- ABOUT TAB -->
-    <div id="tab-about" class="hidden space-y-6">
-      <div class="bg-vapor-surface border border-vapor-card rounded-xl p-8 space-y-4 max-w-3xl mx-auto">
-        <h2 class="text-2xl font-black text-white uppercase tracking-wide">About Vapor Marketplace</h2>
-        <p class="text-xs text-vapor-text leading-relaxed">
-          Vapor is a high-speed, peer-to-peer digital goods platform engineered specifically for gamers across Southeast Asia. By integrating localized fintech solutions like GCash alongside secure escrow state management, Vapor removes traditional marketplace friction and high platform commissions.
-        </p>
+    <!-- ==================== TAB 3: REVIEWS & ABOUT ==================== -->
+    <section id="tab-about" class="hidden space-y-6">
+      <div class="bg-vapor-surface p-6 rounded-xl border border-vapor-card space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-white">About VAPOR</h2>
+          <p class="text-xs text-vapor-muted leading-relaxed mt-1">VAPOR is a next-gen peer-to-peer marketplace engineered for trading digital assets, accounts, and in-game currencies seamlessly with instant database syncing.</p>
+        </div>
+
+        <div class="space-y-4 pt-4 border-t border-vapor-card">
+          <div class="flex justify-between items-center">
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">User Reviews & Feedback</h3>
+            <button onclick="openModal('reviewModal')" class="bg-vapor-card hover:bg-vapor-hover text-vapor-blue text-xs font-bold px-3 py-1.5 rounded border border-vapor-blue/30">
+              <i class="fa-solid fa-pen-to-square mr-1"></i> Write Review
+            </button>
+          </div>
+
+          <div id="reviewsList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Dynamic Reviews Injected via JS -->
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- CONTACT TAB -->
-    <div id="tab-contact" class="hidden space-y-6">
-      <div class="bg-vapor-surface border border-vapor-card rounded-xl p-8 max-w-2xl mx-auto space-y-6">
-        <h2 class="text-2xl font-black text-white uppercase tracking-wide">Customer Support & Inquiries</h2>
-        <form onsubmit="handleContactSubmit(event)" class="space-y-4">
+    <!-- ==================== TAB 4: SUPPORT ==================== -->
+    <section id="tab-contact" class="hidden space-y-6">
+      <div class="bg-vapor-surface p-6 rounded-xl border border-vapor-card max-w-xl mx-auto space-y-4">
+        <h2 class="text-lg font-bold text-white">Customer Support</h2>
+        <p class="text-xs text-vapor-muted">Facing trade disputes or system issues? Send a direct support ticket.</p>
+        <form onsubmit="handleContactSubmit(event)" class="space-y-3">
           <div>
-            <label class="block text-xs font-bold text-vapor-muted uppercase mb-1">Your Email</label>
-            <input type="email" required placeholder="user@domain.com" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
+            <label class="text-xs text-vapor-muted block mb-1">Subject</label>
+            <input type="text" required class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
           </div>
           <div>
-            <label class="block text-xs font-bold text-vapor-muted uppercase mb-1">Message Detail</label>
-            <textarea rows="4" required placeholder="Provide order ID..." class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-xs text-white focus:border-vapor-blue focus:outline-none"></textarea>
+            <label class="text-xs text-vapor-muted block mb-1">Message</label>
+            <textarea rows="4" required class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none"></textarea>
           </div>
-          <button type="submit" class="w-full bg-vapor-blue text-vapor-bg font-extrabold text-xs py-3 rounded uppercase hover:brightness-110 transition-all">
-            Submit Support Ticket
-          </button>
+          <button type="submit" class="w-full bg-vapor-blue text-white font-bold text-xs py-2 rounded-lg hover:brightness-110">Submit Ticket</button>
         </form>
       </div>
-    </div>
+    </section>
 
   </main>
 
-  <!-- MODALS -->
+  <!-- ==================== MODALS ==================== -->
 
-  <!-- CHECKOUT MODAL -->
-  <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-md w-full rounded-xl p-6 border border-vapor-blue/30 space-y-5">
-      <div class="flex justify-between items-center border-b border-vapor-card pb-3">
-        <h3 class="font-extrabold text-white uppercase text-base tracking-wide flex items-center gap-2">
-          <i class="fa-solid fa-cart-check text-vapor-blue"></i> Escrow Checkout
-        </h3>
-        <button onclick="closeModal('checkoutModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+  <!-- SELL ITEM MODAL -->
+  <div id="sellModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-vapor-surface border border-vapor-card w-full max-w-md rounded-2xl p-6 space-y-4 relative shadow-2xl">
+      <div class="flex justify-between items-center pb-2 border-b border-vapor-card">
+        <h3 class="text-sm font-extrabold text-white uppercase tracking-wider"><i class="fa-solid fa-tag text-vapor-blue mr-2"></i> List New Item for Sale</h3>
+        <button onclick="closeModal('sellModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
-
-      <div class="flex gap-4 bg-vapor-bg/70 p-3 rounded-lg border border-vapor-card" id="checkoutItemPreview"></div>
-
-      <form onsubmit="handleMockPayment(event)" class="space-y-4 text-xs">
+      <form onsubmit="handleCreateListing(event)" class="space-y-3">
         <div>
-          <label class="block font-bold text-vapor-muted uppercase mb-1">Select Payment Gateway</label>
-          <div class="grid grid-cols-3 gap-2">
-            <label class="border border-vapor-card rounded p-2 text-center cursor-pointer hover:border-vapor-blue bg-vapor-surface">
-              <input type="radio" name="payMethod" value="GCash" checked class="hidden peer">
-              <div class="peer-checked:text-vapor-blue peer-checked:font-bold">
-                <i class="fa-solid fa-mobile-screen text-lg block mb-1"></i>
-                <span>GCash</span>
-              </div>
-            </label>
-            <label class="border border-vapor-card rounded p-2 text-center cursor-pointer hover:border-vapor-blue bg-vapor-surface">
-              <input type="radio" name="payMethod" value="Maya" class="hidden peer">
-              <div class="peer-checked:text-vapor-blue peer-checked:font-bold">
-                <i class="fa-solid fa-wallet text-lg block mb-1"></i>
-                <span>Maya</span>
-              </div>
-            </label>
-            <label class="border border-vapor-card rounded p-2 text-center cursor-pointer hover:border-vapor-blue bg-vapor-surface">
-              <input type="radio" name="payMethod" value="Vapor Wallet" class="hidden peer">
-              <div class="peer-checked:text-vapor-blue peer-checked:font-bold">
-                <i class="fa-solid fa-coins text-lg block mb-1"></i>
-                <span>Wallet</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div>
-          <label class="block font-bold text-vapor-muted uppercase mb-1">Account / Phone Number (Demo)</label>
-          <input type="text" required value="09171234567" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
-        </div>
-
-        <div class="border-t border-vapor-card/80 pt-3 space-y-1.5">
-          <div class="flex justify-between text-vapor-muted">
-            <span>Subtotal</span>
-            <span id="checkoutSubtotal" class="text-white">₱0.00</span>
-          </div>
-          <div class="flex justify-between text-vapor-muted">
-            <span>Escrow Protection Fee</span>
-            <span class="text-vapor-green">FREE</span>
-          </div>
-          <div class="flex justify-between font-bold text-sm text-white pt-1">
-            <span>Total Amount</span>
-            <span id="checkoutTotal" class="text-vapor-green">₱0.00</span>
-          </div>
-        </div>
-
-        <button type="submit" id="payBtn" class="w-full bg-gradient-to-r from-vapor-greenDark to-vapor-green text-white font-extrabold py-3 rounded uppercase tracking-wider hover:brightness-110 transition-all flex items-center justify-center gap-2">
-          <i class="fa-solid fa-lock"></i> Authorize & Pay
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- SUCCESS MODAL -->
-  <div id="successModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-sm w-full rounded-xl p-6 border border-vapor-green/40 space-y-4 text-center">
-      <div class="w-14 h-14 bg-vapor-green/20 text-vapor-green border border-vapor-green/40 rounded-full flex items-center justify-center mx-auto text-2xl">
-        <i class="fa-solid fa-circle-check"></i>
-      </div>
-      <div>
-        <h3 class="font-extrabold text-white text-lg uppercase">Trade Successful!</h3>
-        <p class="text-xs text-vapor-muted">Item holds have been initialized in Escrow.</p>
-      </div>
-
-      <div class="bg-vapor-bg/80 border border-vapor-card rounded-lg p-3 text-left text-xs space-y-1.5">
-        <div class="flex justify-between">
-          <span class="text-vapor-muted">Transaction ID:</span>
-          <span class="text-vapor-blue font-bold" id="receiptTxnId">#VP-000000</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-vapor-muted">Item:</span>
-          <span class="text-white font-semibold truncate max-w-[160px]" id="receiptItemTitle">-</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-vapor-muted">Amount Paid:</span>
-          <span class="text-vapor-green font-bold" id="receiptAmount">₱0.00</span>
-        </div>
-      </div>
-
-      <button onclick="closeModal('successModal')" class="w-full bg-vapor-blue text-vapor-bg font-extrabold text-xs py-2.5 rounded uppercase hover:brightness-110 transition-all">
-        Back to Marketplace
-      </button>
-    </div>
-  </div>
-
-  <!-- CREATE LISTING MODAL -->
-  <div id="sellModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-lg w-full rounded-xl p-6 border border-vapor-blue/30 space-y-4">
-      <div class="flex justify-between items-center border-b border-vapor-card pb-3">
-        <h3 class="font-extrabold text-white uppercase text-base tracking-wide"><i class="fa-solid fa-tag text-vapor-blue mr-2"></i>List New Item For Sale</h3>
-        <button onclick="closeModal('sellModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <form onsubmit="handleCreateListing(event)" class="space-y-4 text-xs">
-        <div>
-          <label class="block font-bold text-vapor-muted uppercase mb-1">Item Title</label>
-          <input type="text" id="newTitle" required placeholder="e.g. CS2 AK-47 | Asiimov" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+          <label class="text-[11px] text-vapor-muted font-bold block mb-1">ITEM TITLE</label>
+          <input type="text" id="newTitle" required placeholder="e.g. AK-47 | Redline FT" class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-vapor-muted uppercase mb-1">Game</label>
-            <select id="newGame" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+            <label class="text-[11px] text-vapor-muted font-bold block mb-1">GAME</label>
+            <select id="newGame" class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
               <option value="CS2">CS2</option>
               <option value="Valorant">Valorant</option>
               <option value="Genshin Impact">Genshin Impact</option>
@@ -509,68 +294,108 @@
             </select>
           </div>
           <div>
-            <label class="block font-bold text-vapor-muted uppercase mb-1">Category</label>
-            <select id="newCategory" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+            <label class="text-[11px] text-vapor-muted font-bold block mb-1">CATEGORY</label>
+            <select id="newCategory" class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
               <option value="Skins & Cosmetics">Skins & Cosmetics</option>
+              <option value="Accounts">Accounts</option>
               <option value="In-Game Currency">In-Game Currency</option>
-              <option value="Tradeable Items">Tradeable Items</option>
+              <option value="Items & Keys">Items & Keys</option>
             </select>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-vapor-muted uppercase mb-1">Price (PHP ₱)</label>
-            <input type="number" id="newPrice" required min="10" placeholder="1500" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+            <label class="text-[11px] text-vapor-muted font-bold block mb-1">PRICE (PHP ₱)</label>
+            <input type="number" id="newPrice" step="0.01" min="1" required placeholder="1200" class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
           </div>
           <div>
-            <label class="block font-bold text-vapor-muted uppercase mb-1">Image URL</label>
-            <input type="url" id="newImage" required placeholder="https://..." class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+            <label class="text-[11px] text-vapor-muted font-bold block mb-1">IMAGE URL</label>
+            <input type="url" id="newImage" required placeholder="https://..." class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
           </div>
         </div>
-        <button type="submit" id="submitListingBtn" class="w-full bg-gradient-to-r from-vapor-greenDark to-vapor-green text-white font-extrabold py-3 rounded uppercase tracking-wider hover:brightness-110 transition-all">Publish Listing</button>
+        <button type="submit" id="submitListingBtn" class="w-full bg-vapor-blue hover:brightness-110 text-white font-bold text-xs py-2.5 rounded-lg transition-all mt-2">Publish Listing</button>
       </form>
     </div>
   </div>
 
-  <!-- REGISTER MODAL -->
-  <div id="registerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-md w-full rounded-xl p-6 border border-vapor-blue/30 space-y-4">
-      <div class="flex justify-between items-center border-b border-vapor-card pb-3">
-        <h3 class="font-extrabold text-white uppercase text-base tracking-wide"><i class="fa-solid fa-user-shield text-vapor-blue mr-2"></i>Account Registration</h3>
-        <button onclick="closeModal('registerModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+  <!-- REGISTER / LOGIN MODAL -->
+  <div id="registerModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-vapor-surface border border-vapor-card w-full max-w-sm rounded-2xl p-6 space-y-4 relative shadow-2xl">
+      <div class="flex justify-between items-center pb-2 border-b border-vapor-card">
+        <h3 class="text-sm font-extrabold text-white uppercase tracking-wider"><i class="fa-solid fa-user-gear text-vapor-blue mr-2"></i> User Session</h3>
+        <button onclick="closeModal('registerModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <form onsubmit="handleRegistration(event)" class="space-y-4 text-xs">
+      <form onsubmit="handleRegistration(event)" class="space-y-3">
         <div>
-          <label class="block font-bold text-vapor-muted uppercase mb-1">Username</label>
-          <input type="text" id="regUsername" required placeholder="VaporGamer99" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
+          <label class="text-[11px] text-vapor-muted font-bold block mb-1">USERNAME / HANDLE</label>
+          <input type="text" id="regUsername" required placeholder="e.g. ProTrader99" class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none">
         </div>
-        <div>
-          <label class="block font-bold text-vapor-muted uppercase mb-1">GCash Mobile Number</label>
-          <input type="tel" id="regGcash" required pattern="09[0-9]{9}" placeholder="09171234567" class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none">
-        </div>
-        <button type="submit" class="w-full bg-vapor-blue text-vapor-bg font-extrabold py-3 rounded uppercase tracking-wider hover:brightness-110 transition-all">Create Account</button>
+        <button type="submit" class="w-full bg-vapor-blue text-white font-bold text-xs py-2 rounded-lg hover:brightness-110">Set Session Handle</button>
       </form>
     </div>
   </div>
 
-  <!-- REVIEW MODAL -->
-  <div id="reviewModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="glass-panel max-w-md w-full rounded-xl p-6 border border-vapor-blue/30 space-y-4">
-      <div class="flex justify-between items-center border-b border-vapor-card pb-3">
-        <h3 class="font-extrabold text-white uppercase text-base tracking-wide">Submit Trade Review</h3>
-        <button onclick="closeModal('reviewModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+  <!-- SUBMIT REVIEW MODAL -->
+  <div id="reviewModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-vapor-surface border border-vapor-card w-full max-w-sm rounded-2xl p-6 space-y-4 relative shadow-2xl">
+      <div class="flex justify-between items-center pb-2 border-b border-vapor-card">
+        <h3 class="text-sm font-extrabold text-white uppercase tracking-wider"><i class="fa-solid fa-star text-yellow-400 mr-2"></i> Submit Feedback</h3>
+        <button onclick="closeModal('reviewModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <form onsubmit="handleReviewSubmit(event)" class="space-y-4 text-xs">
+      <form onsubmit="handleReviewSubmit(event)" class="space-y-3">
         <div>
-          <label class="block font-bold text-vapor-muted uppercase mb-1">Comment</label>
-          <textarea id="reviewComment" rows="3" required placeholder="Fast trade..." class="w-full bg-vapor-bg border border-vapor-card rounded px-3 py-2 text-white focus:border-vapor-blue focus:outline-none"></textarea>
+          <label class="text-[11px] text-vapor-muted font-bold block mb-1">YOUR REVIEW</label>
+          <textarea id="reviewComment" rows="3" required placeholder="Fast trade delivery..." class="w-full bg-vapor-bg border border-vapor-card rounded-lg p-2 text-xs text-white focus:border-vapor-blue focus:outline-none"></textarea>
         </div>
-        <button type="submit" class="w-full bg-vapor-blue text-vapor-bg font-bold py-2.5 rounded uppercase hover:brightness-110 transition-all">Post Review</button>
+        <button type="submit" class="w-full bg-vapor-green text-white font-bold text-xs py-2 rounded-lg hover:brightness-110">Post Review</button>
       </form>
     </div>
   </div>
 
-  <!-- CORE JS APP WITH SUPABASE DATABASE INTEGRATION -->
+  <!-- CHECKOUT MODAL -->
+  <div id="checkoutModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-vapor-surface border border-vapor-card w-full max-w-md rounded-2xl p-6 space-y-4 relative shadow-2xl">
+      <div class="flex justify-between items-center pb-2 border-b border-vapor-card">
+        <h3 class="text-sm font-extrabold text-white uppercase tracking-wider"><i class="fa-solid fa-cart-shopping text-vapor-green mr-2"></i> Confirm Purchase</h3>
+        <button onclick="closeModal('checkoutModal')" class="text-vapor-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div id="checkoutItemPreview" class="bg-vapor-bg p-3 rounded-lg border border-vapor-card flex items-center gap-3">
+        <!-- Injected via JS -->
+      </div>
+
+      <div class="space-y-1.5 border-t border-b border-vapor-card/50 py-3 text-xs">
+        <div class="flex justify-between text-vapor-muted"><span>Subtotal:</span><span id="checkoutSubtotal" class="text-white">₱0.00</span></div>
+        <div class="flex justify-between text-vapor-muted"><span>Escrow Fee:</span><span class="text-vapor-green font-bold">FREE</span></div>
+        <div class="flex justify-between font-bold text-sm text-white pt-1"><span>Total Deducted:</span><span id="checkoutTotal" class="text-vapor-green font-extrabold">₱0.00</span></div>
+      </div>
+
+      <button onclick="handleMockPayment(event)" id="payBtn" class="w-full bg-gradient-to-r from-vapor-greenDark to-vapor-green text-white font-extrabold text-xs py-2.5 rounded-lg shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2">
+        <i class="fa-solid fa-lock"></i> Authorize & Pay
+      </button>
+    </div>
+  </div>
+
+  <!-- SUCCESS RECEIPT MODAL -->
+  <div id="successModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-vapor-surface border border-vapor-green/40 w-full max-w-sm rounded-2xl p-6 text-center space-y-4 relative shadow-2xl">
+      <div class="w-12 h-12 bg-vapor-green/20 text-vapor-green rounded-full flex items-center justify-center mx-auto text-xl">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-white">Transaction Complete!</h3>
+        <p class="text-xs text-vapor-muted mt-1">Item transfer has been initiated in escrow.</p>
+      </div>
+      <div class="bg-vapor-bg p-3 rounded-lg border border-vapor-card text-left text-xs space-y-1">
+        <div class="flex justify-between"><span class="text-vapor-muted">Txn ID:</span><span id="receiptTxnId" class="text-white font-mono">#VP-000000</span></div>
+        <div class="flex justify-between"><span class="text-vapor-muted">Item:</span><span id="receiptItemTitle" class="text-white font-bold truncate max-w-[180px]">Item</span></div>
+        <div class="flex justify-between"><span class="text-vapor-muted">Amount Paid:</span><span id="receiptAmount" class="text-vapor-green font-bold">₱0.00</span></div>
+      </div>
+      <button onclick="closeModal('successModal')" class="w-full bg-vapor-card hover:bg-vapor-hover text-white text-xs font-bold py-2 rounded-lg border border-vapor-card">Close</button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT CLIENT & SUPABASE LOGIC -->
   <script>
     const SUPABASE_URL = 'https://itjzmiahlftsbwxjmeok.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0anptaWFobGZ0c2J3eGptZW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc2Njc3NDEsImV4cCI6MjEwMzI0Mzc0MX0.g8vc2Xro7fQ7RtAjZ4k9gfpvsVNew5XvVLcwGS4phzA';
@@ -578,10 +403,7 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     let products = [];
-    let reviews = [
-      { reviewer: 'ShadowNinja9', rating: 5, comment: 'Received the CS2 skin in trade within 2 minutes of paying via GCash. Super legit escrow!', date: '2 hours ago' }
-    ];
-
+    let reviews = [];
     let activeGameFilter = 'All';
     let currentUser = null;
     let selectedCheckoutProduct = null;
@@ -589,46 +411,128 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('walletDisplay').textContent = `₱${userBalance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+      restoreUserSession();
       await fetchProducts();
-      renderReviews();
+      await fetchReviews();
     });
 
-    // FETCH PRODUCTS FROM SUPABASE DATABASE
+    // RESTORE USER LOGIN SESSION FROM LOCAL STORAGE
+    function restoreUserSession() {
+      const savedUser = localStorage.getItem('vapor_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        document.getElementById('authContainer').innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-white"><i class="fa-solid fa-user text-vapor-blue mr-1"></i>${currentUser.username}</span>
+            <button onclick="handleLogout()" class="text-[10px] text-vapor-muted hover:text-red-400 font-semibold uppercase ml-2">Logout</button>
+          </div>
+        `;
+      }
+    }
+
+    function handleRegistration(e) {
+      e.preventDefault();
+      const username = document.getElementById('regUsername').value;
+      currentUser = { username };
+      localStorage.setItem('vapor_user', JSON.stringify(currentUser));
+      restoreUserSession();
+      closeModal('registerModal');
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('vapor_user');
+      currentUser = null;
+      document.getElementById('authContainer').innerHTML = `
+        <button onclick="openModal('registerModal')" class="bg-vapor-card hover:bg-vapor-hover text-white text-xs font-semibold px-3 py-2 rounded-lg transition-all border border-vapor-blue/30 hover:border-vapor-blue">
+          <i class="fa-solid fa-user-plus mr-1"></i> Account
+        </button>
+      `;
+    }
+
+    // FETCH PRODUCTS FROM SUPABASE
     async function fetchProducts() {
       const { data, error } = await supabaseClient
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching database products:', error);
-      } else {
-        products = data || [];
-      }
-
+      if (!error) products = data || [];
       renderProducts();
       updateCategoryCounts();
       renderSellerTable();
     }
 
-    function switchTab(tabId) {
-      ['store', 'seller', 'about', 'contact'].forEach(t => {
-        const el = document.getElementById(`tab-${t}`);
-        const btn = document.getElementById(`nav-${t}`);
-        if (el) el.classList.add('hidden');
-        if (btn) {
-          btn.classList.remove('text-vapor-blue', 'border-b-2', 'border-vapor-blue');
-          btn.classList.add('text-vapor-text');
-        }
-      });
+    // FETCH REVIEWS FROM SUPABASE
+    async function fetchReviews() {
+      const { data, error } = await supabaseClient
+        .from('reviews')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      const activeEl = document.getElementById(`tab-${tabId}`);
-      const activeBtn = document.getElementById(`nav-${tabId}`);
-      if (activeEl) activeEl.classList.remove('hidden');
-      if (activeBtn) {
-        activeBtn.classList.add('text-vapor-blue', 'border-b-2', 'border-vapor-blue');
-        activeBtn.classList.remove('text-vapor-text');
+      if (!error) reviews = data || [];
+      renderReviews();
+    }
+
+    // SAVE REVIEW TO SUPABASE
+    async function handleReviewSubmit(e) {
+      e.preventDefault();
+      const comment = document.getElementById('reviewComment').value;
+      const reviewer = currentUser ? currentUser.username : 'Anonymous';
+
+      const { error } = await supabaseClient
+        .from('reviews')
+        .insert([{ reviewer, comment }]);
+
+      if (error) {
+        alert('Failed to save review: ' + error.message);
+        return;
       }
+
+      await fetchReviews();
+      closeModal('reviewModal');
+      e.target.reset();
+    }
+
+    // SAVE PRODUCT TO SUPABASE
+    async function handleCreateListing(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submitListingBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Publishing...`;
+
+      const newProduct = {
+        title: document.getElementById('newTitle').value,
+        game_title: document.getElementById('newGame').value,
+        category: document.getElementById('newCategory').value,
+        price: parseFloat(document.getElementById('newPrice').value),
+        image_url: document.getElementById('newImage').value,
+        seller: currentUser ? currentUser.username : 'You'
+      };
+
+      const { error } = await supabaseClient
+        .from('products')
+        .insert([newProduct]);
+
+      btn.disabled = false;
+      btn.innerHTML = `Publish Listing`;
+
+      if (error) {
+        alert('Failed to publish listing: ' + error.message);
+        return;
+      }
+
+      await fetchProducts();
+      closeModal('sellModal');
+      e.target.reset();
+    }
+
+    async function deleteListing(id) {
+      const { error } = await supabaseClient
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (!error) fetchProducts();
     }
 
     function renderProducts() {
@@ -650,7 +554,7 @@
       if (sortVal === 'price-high') filtered.sort((a, b) => b.price - a.price);
 
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-12 text-center text-vapor-muted bg-vapor-surface rounded-xl border border-vapor-card"><p class="text-sm font-semibold">No active listings found in database.</p></div>`;
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-vapor-muted bg-vapor-surface rounded-xl border border-vapor-card"><p class="text-sm font-semibold">No active listings found.</p></div>`;
         return;
       }
 
@@ -676,6 +580,20 @@
             </div>
             <button onclick="initiateCheckout('${p.id}')" class="bg-gradient-to-r from-vapor-greenDark to-vapor-green hover:brightness-110 text-white font-extrabold text-xs px-4 py-2 rounded transition-all shadow">Buy Now</button>
           </div>
+        </div>
+      `).join('');
+    }
+
+    function renderReviews() {
+      const container = document.getElementById('reviewsList');
+      if (reviews.length === 0) {
+        container.innerHTML = `<p class="text-xs text-vapor-muted col-span-full">No feedback submitted yet.</p>`;
+        return;
+      }
+      container.innerHTML = reviews.map(r => `
+        <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card/80 space-y-2">
+          <div class="flex justify-between items-center"><span class="font-bold text-white text-xs">${r.reviewer}</span></div>
+          <p class="text-xs text-vapor-text">${r.comment}</p>
         </div>
       `).join('');
     }
@@ -714,6 +632,26 @@
       document.getElementById('priceValue').textContent = '₱25,000';
       document.getElementById('globalSearch').value = '';
       renderProducts();
+    }
+
+    function switchTab(tabId) {
+      ['store', 'seller', 'about', 'contact'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`nav-${t}`);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.classList.remove('text-vapor-blue', 'border-b-2', 'border-vapor-blue');
+          btn.classList.add('text-vapor-text');
+        }
+      });
+
+      const activeEl = document.getElementById(`tab-${tabId}`);
+      const activeBtn = document.getElementById(`nav-${tabId}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('text-vapor-blue', 'border-b-2', 'border-vapor-blue');
+        activeBtn.classList.remove('text-vapor-text');
+      }
     }
 
     function initiateCheckout(productId) {
@@ -773,82 +711,6 @@
           <td class="p-3 text-right"><button onclick="deleteListing('${p.id}')" class="text-red-400 hover:text-red-300 font-bold"><i class="fa-solid fa-trash"></i></button></td>
         </tr>
       `).join('');
-    }
-
-    // SAVE NEW LISTING TO SUPABASE
-    async function handleCreateListing(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submitListingBtn');
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Publishing...`;
-
-      const newProduct = {
-        title: document.getElementById('newTitle').value,
-        game_title: document.getElementById('newGame').value,
-        category: document.getElementById('newCategory').value,
-        price: parseFloat(document.getElementById('newPrice').value),
-        image_url: document.getElementById('newImage').value,
-        seller: currentUser ? currentUser.username : 'You'
-      };
-
-      const { data, error } = await supabaseClient
-        .from('products')
-        .insert([newProduct])
-        .select();
-
-      btn.disabled = false;
-      btn.innerHTML = `Publish Listing`;
-
-      if (error) {
-        alert('Failed to publish listing: ' + error.message);
-        return;
-      }
-
-      await fetchProducts();
-      closeModal('sellModal');
-      e.target.reset();
-    }
-
-    // DELETE LISTING FROM SUPABASE
-    async function deleteListing(id) {
-      const { error } = await supabaseClient
-        .from('products')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        alert('Failed to delete item: ' + error.message);
-        return;
-      }
-
-      await fetchProducts();
-    }
-
-    function renderReviews() {
-      document.getElementById('reviewsList').innerHTML = reviews.map(r => `
-        <div class="bg-vapor-bg/60 p-4 rounded-lg border border-vapor-card/80 space-y-2">
-          <div class="flex justify-between items-center"><span class="font-bold text-white text-xs">${r.reviewer}</span></div>
-          <p class="text-xs text-vapor-text">${r.comment}</p>
-        </div>
-      `).join('');
-    }
-
-    function handleReviewSubmit(e) {
-      e.preventDefault();
-      reviews.unshift({
-        reviewer: currentUser ? currentUser.username : 'Anonymous',
-        comment: document.getElementById('reviewComment').value,
-        date: 'Just now'
-      });
-      renderReviews();
-      closeModal('reviewModal');
-    }
-
-    function handleRegistration(e) {
-      e.preventDefault();
-      currentUser = { username: document.getElementById('regUsername').value };
-      document.getElementById('authContainer').innerHTML = `<span class="text-xs font-bold text-white">${currentUser.username}</span>`;
-      closeModal('registerModal');
     }
 
     function handleContactSubmit(e) {
