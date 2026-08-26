@@ -473,7 +473,7 @@
       renderReviews();
     }
 
-    // SAVE REVIEW TO SUPABASE
+    // SAVE REVIEW TO SUPABASE (explicitly passing null for product_id)
     async function handleReviewSubmit(e) {
       e.preventDefault();
       const comment = document.getElementById('reviewComment').value;
@@ -481,7 +481,7 @@
 
       const { error } = await supabaseClient
         .from('reviews')
-        .insert([{ reviewer, comment }]);
+        .insert([{ reviewer, comment, product_id: null }]);
 
       if (error) {
         alert('Failed to save review: ' + error.message);
