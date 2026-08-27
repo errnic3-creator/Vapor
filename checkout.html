@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VAPOR - Escrow Checkout</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+  <div class="glass-panel max-w-lg w-full p-6 rounded-2xl border border-purple-500/30 space-y-6">
+    <h2 class="text-2xl font-black text-white border-b border-gray-800 pb-3">Escrow Checkout</h2>
+    
+    <div id="checkout-item-details" class="bg-gray-900/60 p-4 rounded-xl flex items-center space-x-4 border border-gray-800">
+      <div class="animate-pulse text-xs text-gray-400">Loading order info...</div>
+    </div>
+
+    <div class="space-y-3">
+      <label class="block text-xs uppercase text-gray-400 font-bold">Payment Method</label>
+      <div class="space-y-2">
+        <label class="flex items-center space-x-3 p-3 rounded-lg border border-purple-500/50 bg-purple-900/20 cursor-pointer">
+          <input type="radio" name="payment" value="wallet" checked class="accent-purple-500">
+          <span class="text-sm font-semibold">VAPOR Virtual Wallet (Instant Escrow)</span>
+        </label>
+        <label class="flex items-center space-x-3 p-3 rounded-lg border border-gray-800 bg-gray-900/40 opacity-70 cursor-pointer">
+          <input type="radio" name="payment" value="gcash" class="accent-purple-500">
+          <span class="text-sm font-semibold">GCash (Virtual Direct - Simulated)</span>
+        </label>
+      </div>
+    </div>
+
+    <button id="confirm-purchase-btn" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-lg hover:from-emerald-500 hover:to-teal-500 transition">Confirm & Execute Escrow</button>
+  </div>
+  <script src="checkout.js"></script>
+</body>
+</html>
