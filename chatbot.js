@@ -1,3 +1,16 @@
+// 1. Inject global CSS to forcibly hide Voiceflow's default launcher bubble
+const style = document.createElement('style');
+style.innerHTML = `
+  /* Hide Voiceflow default widget launcher */
+  #voiceflow-chat .vfw-launcher,
+  .vf-launcher,
+  div[class*="vfw-launcher"] {
+    display: none !important;
+  }
+`;
+document.head.appendChild(style);
+
+// 2. Inject Custom Chatbot UI
 const chatbotHTML = `
   <div id="chat-widget" class="fixed bottom-5 right-5 z-50 flex flex-col items-end">
     <div id="chat-window" class="hidden glass-panel w-80 h-96 rounded-xl flex flex-col mb-3 overflow-hidden border border-purple-500/40 glow-purple">
@@ -13,7 +26,9 @@ const chatbotHTML = `
         <button type="submit" class="bg-purple-600 px-3 py-1 rounded text-xs font-bold">Send</button>
       </form>
     </div>
-    <button id="toggle-chat" class="bg-purple-600 hover:bg-purple-500 text-white p-3 rounded-full shadow-lg font-bold">💬 Support</button>
+    <button id="toggle-chat" class="bg-purple-600 hover:bg-purple-500 text-white px-5 py-3 rounded-full shadow-lg font-bold flex items-center gap-2">
+      💬 Support
+    </button>
   </div>
 `;
 
@@ -26,17 +41,20 @@ const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
 
-// Toggle local chat window & open Voiceflow if initialized
+// Toggle Chat Handler
 toggleBtn.onclick = () => {
-  chatWindow.classList.toggle('hidden');
-  if (window.voiceflow?.chat) {
+  // If Voiceflow widget is loaded, trigger Voiceflow directly
+  if (window.voiceflow?.chat?.open) {
     window.voiceflow.chat.open();
+  } else {
+    // Fallback to local custom chat window
+    chatWindow.classList.toggle('hidden');
   }
 };
 
 closeBtn.onclick = () => {
   chatWindow.classList.add('hidden');
-  if (window.voiceflow?.chat) {
+  if (window.voiceflow?.chat?.close) {
     window.voiceflow.chat.close();
   }
 };
@@ -69,16 +87,14 @@ chatForm.onsubmit = async (e) => {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 };
 
-// Voiceflow v2 Embed Integration (Hides default launcher icon)
+// Voiceflow Integration Script
 (function(d, t) {
   var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
   v.onload = function() {
     window.voiceflow?.chat?.load({
       verify: { projectID: 'YOUR_VOICEFLOW_PROJECT_ID' },
       url: 'https://general-runtime.voiceflow.com',
-      versionID: 'production',
-      render: { mode: 'overlay' },
-      autostart: false
+      versionID: 'production'
     });
   };
   v.src = "https://cdn.voiceflow.com/widget/bundle.mjs";
