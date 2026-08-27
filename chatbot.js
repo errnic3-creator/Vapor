@@ -26,8 +26,20 @@ const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
 
-toggleBtn.onclick = () => chatWindow.classList.toggle('hidden');
-closeBtn.onclick = () => chatWindow.classList.add('hidden');
+// Toggle local chat window & open Voiceflow if initialized
+toggleBtn.onclick = () => {
+  chatWindow.classList.toggle('hidden');
+  if (window.voiceflow?.chat) {
+    window.voiceflow.chat.open();
+  }
+};
+
+closeBtn.onclick = () => {
+  chatWindow.classList.add('hidden');
+  if (window.voiceflow?.chat) {
+    window.voiceflow.chat.close();
+  }
+};
 
 chatForm.onsubmit = async (e) => {
   e.preventDefault();
@@ -57,14 +69,16 @@ chatForm.onsubmit = async (e) => {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 };
 
-// Voiceflow v2 Embed Integration Hook
+// Voiceflow v2 Embed Integration (Hides default launcher icon)
 (function(d, t) {
   var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
   v.onload = function() {
     window.voiceflow?.chat?.load({
       verify: { projectID: 'YOUR_VOICEFLOW_PROJECT_ID' },
       url: 'https://general-runtime.voiceflow.com',
-      versionID: 'production'
+      versionID: 'production',
+      render: { mode: 'overlay' },
+      autostart: false
     });
   };
   v.src = "https://cdn.voiceflow.com/widget/bundle.mjs";
