@@ -31,15 +31,23 @@ authForm.addEventListener('submit', async (e) => {
 
   if (isRegister) {
     const username = document.getElementById('username').value;
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) return showError(error.message);
+    
+    // Pass username in user_metadata so the Supabase SQL trigger builds the profile automatically
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: { username: username || email.split('@')[0] }
+      }
+    });
 
-    if (data.user) {
-      const { error: profileError } = await supabase.from('profiles').insert([
-        { id: data.user.id, username: username || email.split('@')[0], balance: 10000.00 }
-      ]);
-      if (profileError) return showError(profileError.message);
+    if (error) return showError(error.message);
+    
+    // Auto-login or redirect
+    if (data.session) {
       window.location.href = 'index.html';
+    } else {
+      showError('Registration successful! Check your email or try signing in.');
     }
   } else {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
