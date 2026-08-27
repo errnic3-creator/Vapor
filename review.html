@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>VAPOR - Reviews Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+  <header class="glass-panel sticky top-0 z-40 border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+    <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-500">VAPOR REVIEWS</h1>
+    <nav class="space-x-6 text-sm font-semibold">
+      <a href="index.html" class="text-gray-400 hover:text-white">Storefront</a>
+      <a href="reviews.html" class="text-purple-400">Reviews</a>
+    </nav>
+  </header>
+
+  <main class="max-w-5xl w-full mx-auto p-6 space-y-6">
+    <div class="glass-panel p-6 rounded-xl flex items-center justify-between">
+      <div>
+        <h2 class="text-3xl font-black text-white" id="avg-rating">4.9 / 5.0</h2>
+        <p class="text-xs text-gray-400">Based on user experience feedback</p>
+      </div>
+      <button id="open-rev-modal" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-bold">Write a Review</button>
+    </div>
+
+    <div id="reviews-feed" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+  </main>
+
+  <div id="review-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center hidden z-50">
+    <form id="review-form" class="glass-panel p-6 rounded-xl max-w-md w-full space-y-4">
+      <h3 class="text-lg font-bold text-white">Platform Review</h3>
+      <div>
+        <label class="block text-xs text-gray-400 mb-1">Rating (1 to 5 Stars)</label>
+        <select id="rev-rating" class="w-full bg-gray-900 border border-gray-700 px-3 py-2 rounded text-white">
+          <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+          <option value="4">⭐⭐⭐⭐ (4/5)</option>
+          <option value="3">⭐⭐⭐ (3/5)</option>
+          <option value="2">⭐⭐ (2/5)</option>
+          <option value="1">⭐ (1/5)</option>
+        </select>
+      </div>
+      <textarea id="rev-comment" placeholder="Share your experience..." required class="w-full bg-gray-900 border border-gray-700 px-3 py-2 rounded text-sm text-white h-24"></textarea>
+      <div class="flex space-x-2">
+        <button type="button" id="close-rev-modal" class="flex-1 bg-gray-800 py-2 rounded text-sm">Cancel</button>
+        <button type="submit" class="flex-1 bg-purple-600 py-2 rounded text-sm font-bold">Post Feedback</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="reviews.js"></script>
+</body>
+</html>
