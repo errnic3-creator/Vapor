@@ -1,18 +1,6 @@
-// 1. Inject global CSS to forcibly hide Voiceflow's default launcher bubble
-const style = document.createElement('style');
-style.innerHTML = `
-  /* Hide Voiceflow default widget launcher */
-  #voiceflow-chat .vfw-launcher,
-  .vf-launcher,
-  div[class*="vfw-launcher"] {
-    display: none !important;
-  }
-`;
-document.head.appendChild(style);
-
-// 2. Inject Custom Chatbot UI
 const chatbotHTML = `
-  <div id="chat-widget" class="fixed bottom-5 right-5 z-50 flex flex-col items-end">
+  <!-- Changed right-5 to right-24 to offset your custom button away from Voiceflow -->
+  <div id="chat-widget" class="fixed bottom-5 right-24 z-50 flex flex-col items-end">
     <div id="chat-window" class="hidden glass-panel w-80 h-96 rounded-xl flex flex-col mb-3 overflow-hidden border border-purple-500/40 glow-purple">
       <div class="bg-purple-900/60 p-3 border-b border-gray-800 flex justify-between items-center">
         <span class="text-xs font-bold text-white">VAPOR AI Escrow Assistant</span>
@@ -41,22 +29,12 @@ const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
 
-// Toggle Chat Handler
 toggleBtn.onclick = () => {
-  // If Voiceflow widget is loaded, trigger Voiceflow directly
-  if (window.voiceflow?.chat?.open) {
-    window.voiceflow.chat.open();
-  } else {
-    // Fallback to local custom chat window
-    chatWindow.classList.toggle('hidden');
-  }
+  chatWindow.classList.toggle('hidden');
 };
 
 closeBtn.onclick = () => {
   chatWindow.classList.add('hidden');
-  if (window.voiceflow?.chat?.close) {
-    window.voiceflow.chat.close();
-  }
 };
 
 chatForm.onsubmit = async (e) => {
@@ -87,7 +65,7 @@ chatForm.onsubmit = async (e) => {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 };
 
-// Voiceflow Integration Script
+// Voiceflow Integration Hook
 (function(d, t) {
   var v = d.createElement(t), s = d.getElementsByTagName(t)[0];
   v.onload = function() {
