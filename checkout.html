@@ -3,33 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <title>VAPOR - Escrow Checkout</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
-  <div class="glass-panel max-w-lg w-full p-6 rounded-2xl border border-purple-500/30 space-y-6">
-    <h2 class="text-2xl font-black text-white border-b border-gray-800 pb-3">Escrow Checkout</h2>
+<body class="bg-[#0b0e14] text-gray-100 min-h-screen flex flex-col items-center justify-center p-6 font-sans antialiased">
+  
+  <div class="bg-[#121620] max-w-lg w-full p-8 rounded-2xl border border-purple-500/30 space-y-6 shadow-2xl">
+    <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+      <h2 class="text-2xl font-black text-white">Escrow Checkout</h2>
+      <a href="index.html" class="text-xs text-gray-400 hover:text-white transition-colors">← Back to Store</a>
+    </div>
     
-    <div id="checkout-item-details" class="bg-gray-900/60 p-4 rounded-xl flex items-center space-x-4 border border-gray-800">
+    <div id="checkout-item-details" class="bg-gray-900/80 p-4 rounded-xl flex items-center space-x-4 border border-gray-800">
       <div class="animate-pulse text-xs text-gray-400">Loading order info...</div>
     </div>
 
     <div class="space-y-3">
-      <label class="block text-xs uppercase text-gray-400 font-bold">Payment Method</label>
-      <div class="space-y-2">
-        <label class="flex items-center space-x-3 p-3 rounded-lg border border-purple-500/50 bg-purple-900/20 cursor-pointer">
+      <label class="block text-xs uppercase text-gray-400 font-bold tracking-wider">Payment Method</label>
+      <div class="space-y-3">
+        <label class="flex items-center space-x-3 p-4 rounded-xl border border-purple-500/50 bg-purple-950/20 cursor-pointer hover:border-purple-500 transition-all">
           <input type="radio" name="payment" value="wallet" checked class="accent-purple-500">
-          <span class="text-sm font-semibold">VAPOR Virtual Wallet (Instant Escrow)</span>
+          <span class="text-sm font-semibold text-gray-100">VAPOR Virtual Wallet <span class="text-purple-400 font-normal">(Instant Escrow)</span></span>
         </label>
-        <label class="flex items-center space-x-3 p-3 rounded-lg border border-gray-800 bg-gray-900/40 opacity-70 cursor-pointer">
+        <label class="flex items-center space-x-3 p-4 rounded-xl border border-gray-800 bg-gray-900/40 opacity-60 cursor-pointer hover:opacity-100 transition-all">
           <input type="radio" name="payment" value="gcash" class="accent-purple-500">
-          <span class="text-sm font-semibold">GCash (Virtual Direct - Simulated)</span>
+          <span class="text-sm font-semibold text-gray-300">GCash <span class="text-gray-500 font-normal">(Virtual Direct - Simulated)</span></span>
         </label>
       </div>
     </div>
 
-    <button id="confirm-purchase-btn" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold rounded-lg hover:from-emerald-500 hover:to-teal-500 transition">Confirm & Execute Escrow</button>
+    <button id="confirm-purchase-btn" class="w-full py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-600/20">Confirm & Execute Escrow</button>
   </div>
+
   <script src="config.js"></script>
   <script src="checkout.js"></script>
 </body>
